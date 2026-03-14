@@ -292,9 +292,9 @@ func (p *SentinelDLPParser) mapRemovableMedia(event *common.ECSEvent, payload js
 	// Destination address = device ID (per spec: destination.address for device info).
 	if pl.DeviceID != "" {
 		event.Destination = &common.EndpointFields{
-			Domain: pl.DeviceLabel,
+			Address: pl.DeviceID,
+			Domain:  pl.DeviceLabel,
 		}
-		event.Destination.IP = pl.DeviceID // Using IP field for device_id as closest ECS match.
 	}
 
 	// DLP fields.

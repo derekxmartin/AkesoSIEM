@@ -64,10 +64,11 @@ type ParentProcess struct {
 
 // EndpointFields is used for both source.* and destination.* (ECS source/destination field sets).
 type EndpointFields struct {
-	IP     string     `json:"ip,omitempty"`
-	Port   int        `json:"port,omitempty"`
-	Domain string     `json:"domain,omitempty"`
-	User   *UserFields `json:"user,omitempty"`
+	IP      string      `json:"ip,omitempty"`
+	Port    int         `json:"port,omitempty"`
+	Domain  string      `json:"domain,omitempty"`
+	Address string      `json:"address,omitempty"`
+	User    *UserFields `json:"user,omitempty"`
 }
 
 // UserFields captures user identity (ECS user.* field set).

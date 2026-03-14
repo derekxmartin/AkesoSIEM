@@ -1,0 +1,119 @@
+# Sigma Logsource Mapping — SentinelSIEM
+#
+# Maps Sigma rule logsource fields (category, product, service) to ECS filter
+# conditions. The correlate engine uses these mappings to determine which events
+# a given Sigma rule should evaluate against.
+#
+# Matching rules:
+#   - All logsource fields specified in a mapping must match (AND logic).
+#   - All conditions are applied as ECS field filters on the event.
+#   - More specific mappings (product+service) take priority over general ones (category only).
+#   - Category-level mappings enable cross-product rules (e.g., "malware" matches both AV and EDR).
+
+mappings:
+  # ============================================================
+  # Sentinel Portfolio — Product-Level Mappings
+  # ============================================================
+
+  # SentinelEDR: endpoint detection and response telemetry
+  - logsource:
+      product: sentineledr
+    conditions:
+      source_type: sentineledr
+
+  # Sentinel AV: antivirus scan, quarantine, and block events
+  - logsource:
+      product: sentinel_av
+    conditions:
+      source_type: sentinel_av
+
+  # Sentinel DLP: data loss prevention policy and classification events
+  - logsource:
+      product: sentinel_dlp
+    conditions:
+      source_type: sentinel_dlp
+
+  # ============================================================
+  # ECS Category-Level Mappings (Cross-Product)
+  # ============================================================
+
+  # Malware: matches AV scan results AND EDR scanner/AMSI detections
+  # Enables rules like: "any malware detection across all products"
+  - logsource:
+      category: malware
+    conditions:
+      event.category: malware
+
+  # Process creation: matches EDR process_create AND Windows 4688/Sysmon 1
+  - logsource:
+      category: process_creation
+    conditions:
+      event.category: process
+      event.type: start
+
+  # Network connection: matches EDR network events AND firewall logs
+  - logsource:
+      category: network_connection
+    conditions:
+      event.category: network
+      event.type: connection
+
+  # File events: matches EDR file events, DLP file events, and AV file detections
+  - logsource:
+      category: file_event
+    conditions:
+      event.category: file
+
+  # Registry events: matches EDR registry operations
+  - logsource:
+      category: registry_event
+    conditions:
+      event.category: registry
+
+  # Image/DLL load events: matches EDR image load telemetry
+  - logsource:
+      category: image_load
+    conditions:
+      event.category: process
+      event.type: info
+      event.action: image_load
+
+  # ============================================================
+  # Windows Event Log Mappings (Placeholders for Phase 2)
+  # ============================================================
+
+  - logsource:
+      product: windows
+      service: security
+    conditions:
+      source_type: winevt
+      winevt.channel: Security
+
+  - logsource:
+      product: windows
+      service: system
+    conditions:
+      source_type: winevt
+      winevt.channel: System
+
+  - logsource:
+      product: windows
+      service: sysmon
+    conditions:
+      source_type: winevt
+      winevt.channel: Microsoft-Windows-Sysmon/Operational
+
+  # ============================================================
+  # Syslog Mappings (Placeholders for Phase 3)
+  # ============================================================
+
+  - logsource:
+      product: linux
+    conditions:
+      source_type: syslog
+
+  - logsource:
+      category: firewall
+    conditions:
+      event.category: network
+      event.type: denied

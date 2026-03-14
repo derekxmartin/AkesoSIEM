@@ -313,8 +313,8 @@ func TestDLPRemovableMedia(t *testing.T) {
 	if event.Destination == nil {
 		t.Fatal("expected destination fields for device info")
 	}
-	if event.Destination.IP != "USB\\VID_0781&PID_5583\\12345" {
-		t.Errorf("destination.ip (device_id) = %q", event.Destination.IP)
+	if event.Destination.Address != "USB\\VID_0781&PID_5583\\12345" {
+		t.Errorf("destination.address (device_id) = %q", event.Destination.Address)
 	}
 	if event.Destination.Domain != "SanDisk Ultra" {
 		t.Errorf("destination.domain (device_label) = %q, want SanDisk Ultra", event.Destination.Domain)

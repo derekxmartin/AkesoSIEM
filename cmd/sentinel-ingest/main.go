@@ -61,8 +61,16 @@ func main() {
 		log.Println("Elasticsearch index template ensured")
 	}
 
+	// Ensure NDR host score index exists.
+	if err := esStore.EnsureHostScoreIndex(ctx); err != nil {
+		log.Printf("Warning: failed to ensure host score index (ES may be unavailable): %v", err)
+	} else {
+		log.Println("NDR host score index ensured")
+	}
+
 	// Build the ingest pipeline: HTTP → normalize → ES.
-	pipeline := ingest.NewPipeline(engine, esStore, cfg.Elasticsearch.IndexPrefix)
+	// esStore implements both Indexer and HostScoreIndexer.
+	pipeline := ingest.NewPipeline(engine, esStore, cfg.Elasticsearch.IndexPrefix, esStore)
 	listener := ingest.NewHTTPListener(cfg.Ingest, pipeline.Handle)
 
 	srv := &http.Server{

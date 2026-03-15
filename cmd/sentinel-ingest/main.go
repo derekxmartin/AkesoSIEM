@@ -94,6 +94,16 @@ func main() {
 	// Mount the reload endpoint for CLI-triggered hot-reload.
 	listener.Post("/api/v1/rules/reload", ruleLoader.ReloadHandler())
 
+	// Create correlation state manager for expiration and memory bounds.
+	stateManager := correlate.NewStateManager(nil, nil, nil, correlate.StateManagerConfig{
+		ExpiryInterval:    time.Duration(cfg.Correlate.StateExpirySec) * time.Second,
+		MaxBucketsPerRule: cfg.Correlate.MaxBucketsPerRule,
+	})
+	stateManager.Start()
+
+	// Mount correlation health endpoint.
+	listener.Get("/api/v1/correlate/health", stateManager.HealthHandler())
+
 	srv := &http.Server{
 		Addr:         listener.ListenAddr(),
 		Handler:      listener.Router(),
@@ -127,6 +137,9 @@ func main() {
 
 	<-done
 	fmt.Println("\nShutting down...")
+
+	// Stop correlation state manager.
+	stateManager.Stop()
 
 	// Stop rule loader file watcher.
 	ruleLoader.Stop()

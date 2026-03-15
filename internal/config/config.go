@@ -61,6 +61,7 @@ type CorrelateConfig struct {
 	LogsourceMapPath string `toml:"logsource_map_path"`
 	ReloadInterval   int    `toml:"reload_interval_sec"`
 	StateExpirySec   int    `toml:"state_expiry_sec"`
+	MaxBucketsPerRule int   `toml:"max_buckets_per_rule"`
 	DedupWindowSec   int    `toml:"dedup_window_sec"`
 }
 
@@ -107,7 +108,8 @@ func Defaults() Config {
 			RulesDir:         "rules",
 			LogsourceMapPath: "parsers/logsource_map.yaml",
 			ReloadInterval:   30,
-			StateExpirySec:   3600,
+			StateExpirySec:    3600,
+			MaxBucketsPerRule: 10000,
 			DedupWindowSec:   60,
 		},
 		Query: QueryConfig{

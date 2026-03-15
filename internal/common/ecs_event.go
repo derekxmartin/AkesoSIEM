@@ -25,6 +25,15 @@ type ECSEvent struct {
 	Threat      *ThreatFields      `json:"threat,omitempty"`
 	DLP         *DLPFields         `json:"dlp,omitempty"`
 	AV          *AVFields          `json:"av,omitempty"`
+	DNS         *DNSFields         `json:"dns,omitempty"`
+	HTTP        *HTTPFields        `json:"http,omitempty"`
+	TLS         *TLSFields         `json:"tls,omitempty"`
+	URL         *URLFields         `json:"url,omitempty"`
+	UserAgent   *UserAgentFields   `json:"user_agent,omitempty"`
+	SMB         *SMBFields         `json:"smb,omitempty"`
+	Kerberos    *KerberosFields    `json:"kerberos,omitempty"`
+	SSH         *SSHFields         `json:"ssh,omitempty"`
+	NDR         *NDRFields         `json:"ndr,omitempty"`
 	Observer    *ObserverFields    `json:"observer,omitempty"`
 	Log         *LogFields         `json:"log,omitempty"`
 
@@ -39,12 +48,13 @@ type ECSEvent struct {
 
 // EventFields captures event metadata (ECS event.* field set).
 type EventFields struct {
-	Kind     string   `json:"kind,omitempty"`
-	Category []string `json:"category,omitempty"`
-	Type     []string `json:"type,omitempty"`
-	Action   string   `json:"action,omitempty"`
-	Outcome  string   `json:"outcome,omitempty"`
-	Severity int      `json:"severity,omitempty"`
+	Kind     string     `json:"kind,omitempty"`
+	Category []string   `json:"category,omitempty"`
+	Type     []string   `json:"type,omitempty"`
+	Action   string     `json:"action,omitempty"`
+	Outcome  string     `json:"outcome,omitempty"`
+	Severity int        `json:"severity,omitempty"`
+	Ingested *time.Time `json:"ingested,omitempty"`
 }
 
 // ProcessFields captures process information (ECS process.* field set).
@@ -124,9 +134,12 @@ type RegistryDataFields struct {
 
 // NetworkFields captures network metadata (ECS network.* field set).
 type NetworkFields struct {
-	Protocol  string `json:"protocol,omitempty"`
-	Direction string `json:"direction,omitempty"`
-	Bytes     int64  `json:"bytes,omitempty"`
+	Protocol    string `json:"protocol,omitempty"`
+	Direction   string `json:"direction,omitempty"`
+	Bytes       int64  `json:"bytes,omitempty"`
+	Transport   string `json:"transport,omitempty"`
+	Packets     int64  `json:"packets,omitempty"`
+	CommunityID string `json:"community_id,omitempty"`
 }
 
 // ThreatFields captures threat intelligence and MITRE ATT&CK mapping (ECS threat.* field set).
@@ -206,4 +219,147 @@ type SyslogFacility struct {
 type SyslogSeverity struct {
 	Code int    `json:"code"`
 	Name string `json:"name,omitempty"`
+}
+
+// DNSFields captures DNS query/response metadata (ECS dns.* field set).
+type DNSFields struct {
+	Question     *DNSQuestion `json:"question,omitempty"`
+	Answers      []DNSAnswer  `json:"answers,omitempty"`
+	ResponseCode string       `json:"response_code,omitempty"`
+	HeaderFlags  []string     `json:"header_flags,omitempty"`
+}
+
+// DNSQuestion captures the DNS question section.
+type DNSQuestion struct {
+	Name string `json:"name,omitempty"`
+	Type string `json:"type,omitempty"`
+}
+
+// DNSAnswer captures a single DNS answer record.
+type DNSAnswer struct {
+	Data string `json:"data,omitempty"`
+	Type string `json:"type,omitempty"`
+	TTL  int    `json:"ttl,omitempty"`
+}
+
+// HTTPFields captures HTTP request/response metadata (ECS http.* field set).
+type HTTPFields struct {
+	Request  *HTTPRequest  `json:"request,omitempty"`
+	Response *HTTPResponse `json:"response,omitempty"`
+}
+
+// HTTPRequest captures HTTP request metadata.
+type HTTPRequest struct {
+	Method string `json:"method,omitempty"`
+}
+
+// HTTPResponse captures HTTP response metadata.
+type HTTPResponse struct {
+	StatusCode int            `json:"status_code,omitempty"`
+	Body       *HTTPBodyFields `json:"body,omitempty"`
+}
+
+// HTTPBodyFields captures HTTP body size metadata.
+type HTTPBodyFields struct {
+	Bytes int64 `json:"bytes,omitempty"`
+}
+
+// URLFields captures URL metadata (ECS url.* field set).
+type URLFields struct {
+	Full string `json:"full,omitempty"`
+}
+
+// UserAgentFields captures user agent metadata (ECS user_agent.* field set).
+type UserAgentFields struct {
+	Original string `json:"original,omitempty"`
+}
+
+// TLSFields captures TLS handshake metadata (ECS tls.* field set).
+type TLSFields struct {
+	Version string           `json:"version,omitempty"`
+	Cipher  string           `json:"cipher,omitempty"`
+	Client  *TLSClientFields `json:"client,omitempty"`
+	Server  *TLSServerFields `json:"server,omitempty"`
+}
+
+// TLSClientFields captures TLS client-side metadata.
+type TLSClientFields struct {
+	JA3        string `json:"ja3,omitempty"`
+	JA4        string `json:"ja4,omitempty"`
+	ServerName string `json:"server_name,omitempty"`
+}
+
+// TLSServerFields captures TLS server-side metadata.
+type TLSServerFields struct {
+	JA3S string `json:"ja3s,omitempty"`
+	JA4S string `json:"ja4s,omitempty"`
+}
+
+// SMBFields captures SMB protocol metadata (custom extension for NDR events).
+type SMBFields struct {
+	Version  string `json:"version,omitempty"`
+	Action   string `json:"action,omitempty"`
+	Filename string `json:"filename,omitempty"`
+	Path     string `json:"path,omitempty"`
+	Domain   string `json:"domain,omitempty"`
+	Username string `json:"username,omitempty"`
+}
+
+// KerberosFields captures Kerberos authentication metadata (custom extension for NDR events).
+type KerberosFields struct {
+	RequestType string `json:"request_type,omitempty"`
+	Client      string `json:"client,omitempty"`
+	Service     string `json:"service,omitempty"`
+	Cipher      string `json:"cipher,omitempty"`
+	Success     *bool  `json:"success,omitempty"`
+	ErrorCode   string `json:"error_code,omitempty"`
+}
+
+// SSHFields captures SSH protocol metadata (ECS ssh.* field set).
+type SSHFields struct {
+	Client      string `json:"client,omitempty"`
+	Server      string `json:"server,omitempty"`
+	HASSH       string `json:"hassh,omitempty"`
+	HASSHServer string `json:"hassh_server,omitempty"`
+}
+
+// NDRFields captures SentinelNDR-specific metadata (custom extension).
+type NDRFields struct {
+	Detection *NDRDetection `json:"detection,omitempty"`
+	HostScore *NDRHostScore `json:"host_score,omitempty"`
+	Beacon    *NDRBeacon    `json:"beacon,omitempty"`
+	Session   *NDRSession   `json:"session,omitempty"`
+}
+
+// NDRDetection captures NDR behavioral detection metadata.
+type NDRDetection struct {
+	Name      string `json:"name,omitempty"`
+	Severity  int    `json:"severity,omitempty"`
+	Certainty int    `json:"certainty,omitempty"`
+	Category  string `json:"category,omitempty"`
+	PcapRef   string `json:"pcap_ref,omitempty"`
+}
+
+// NDRHostScore captures NDR per-host threat scoring.
+type NDRHostScore struct {
+	Threat    int    `json:"threat,omitempty"`
+	Certainty int    `json:"certainty,omitempty"`
+	Quadrant  string `json:"quadrant,omitempty"`
+}
+
+// NDRBeacon captures NDR beacon detection metadata.
+type NDRBeacon struct {
+	IntervalMean   float64 `json:"interval_mean,omitempty"`
+	IntervalStddev float64 `json:"interval_stddev,omitempty"`
+}
+
+// NDRSession captures NDR session/connection metadata.
+type NDRSession struct {
+	ConnState   string  `json:"conn_state,omitempty"`
+	CommunityID string  `json:"community_id,omitempty"`
+	Duration    float64 `json:"duration,omitempty"`
+	BytesOrig   int64   `json:"bytes_orig,omitempty"`
+	BytesResp   int64   `json:"bytes_resp,omitempty"`
+	PacketsOrig int64   `json:"packets_orig,omitempty"`
+	PacketsResp int64   `json:"packets_resp,omitempty"`
 }

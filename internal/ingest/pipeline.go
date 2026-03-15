@@ -14,21 +14,25 @@ import (
 
 // Pipeline wires together the ingestion components:
 // HTTPListener → normalize.Engine → store.Indexer (Elasticsearch).
+// NDR host_score events are additionally upserted to a dedicated index.
 type Pipeline struct {
-	engine  *normalize.Engine
-	indexer store.Indexer
-	prefix  string
+	engine         *normalize.Engine
+	indexer        store.Indexer
+	hostScoreIndex store.HostScoreIndexer
+	prefix         string
 }
 
 // NewPipeline creates an ingestion pipeline.
-func NewPipeline(engine *normalize.Engine, indexer store.Indexer, prefix string) *Pipeline {
+// hostScoreIndex may be nil if host score upsert is not needed.
+func NewPipeline(engine *normalize.Engine, indexer store.Indexer, prefix string, hostScoreIndex store.HostScoreIndexer) *Pipeline {
 	if prefix == "" {
 		prefix = "sentinel"
 	}
 	return &Pipeline{
-		engine:  engine,
-		indexer: indexer,
-		prefix:  prefix,
+		engine:         engine,
+		indexer:        indexer,
+		hostScoreIndex: hostScoreIndex,
+		prefix:         prefix,
 	}
 }
 
@@ -61,6 +65,26 @@ func (p *Pipeline) Handle(rawEvents []json.RawMessage) {
 			log.Printf("[pipeline] indexing error for %s: %v", index, err)
 		}
 	}
+
+	// Upsert NDR host score events to the dedicated index.
+	if p.hostScoreIndex != nil {
+		for _, event := range events {
+			if isHostScoreEvent(event) {
+				if err := p.hostScoreIndex.UpsertHostScore(ctx, event); err != nil {
+					log.Printf("[pipeline] host score upsert error: %v", err)
+				}
+			}
+		}
+	}
+}
+
+// isHostScoreEvent returns true if the event is an NDR host_score event.
+func isHostScoreEvent(event *common.ECSEvent) bool {
+	return event != nil &&
+		event.Event != nil &&
+		event.Event.Action == "host_score_update" &&
+		event.NDR != nil &&
+		event.NDR.HostScore != nil
 }
 
 // groupByIndex partitions events into per-index batches.

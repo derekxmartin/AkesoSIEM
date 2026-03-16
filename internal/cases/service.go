@@ -374,3 +374,98 @@ func (s *Service) AddComment(ctx context.Context, id, author, text string) (*Cas
 
 	return c, nil
 }
+
+// AddObservable adds a manually-created observable to a case.
+func (s *Service) AddObservable(ctx context.Context, id string, obs Observable, author string) (*Case, error) {
+	c, err := s.Get(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	seqNo := *c.SeqNo
+	primaryTerm := *c.PrimaryTerm
+
+	now := time.Now().UTC()
+	c.Observables = MergeObservables(c.Observables, []Observable{obs})
+	c.Timeline = append(c.Timeline, TimelineEntry{
+		Timestamp:  now,
+		Author:     author,
+		ActionType: ActionObservableAdded,
+		Content:    json.RawMessage(fmt.Sprintf(`{"type":%q,"value":%q}`, obs.Type, obs.Value)),
+	})
+	c.UpdatedAt = now
+
+	c.SeqNo = nil
+	c.PrimaryTerm = nil
+
+	doc, err := json.Marshal(c)
+	if err != nil {
+		return nil, fmt.Errorf("marshaling case: %w", err)
+	}
+
+	if err := s.backend.IndexDocIfMatch(ctx, s.index, id, doc, seqNo, primaryTerm); err != nil {
+		return nil, fmt.Errorf("adding observable: %w", err)
+	}
+
+	return c, nil
+}
+
+// CaseStats holds aggregate metrics for the dashboard.
+type CaseStats struct {
+	Total      int            `json:"total"`
+	ByStatus   map[string]int `json:"by_status"`
+	BySeverity map[string]int `json:"by_severity"`
+}
+
+// Stats returns aggregate case metrics.
+func (s *Service) Stats(ctx context.Context) (*CaseStats, error) {
+	body := map[string]any{
+		"size": 0,
+		"aggs": map[string]any{
+			"by_status": map[string]any{
+				"terms": map[string]any{"field": "status"},
+			},
+			"by_severity": map[string]any{
+				"terms": map[string]any{"field": "severity"},
+			},
+		},
+	}
+
+	result, err := s.backend.SearchRaw(ctx, s.index, body)
+	if err != nil {
+		return nil, fmt.Errorf("case stats: %w", err)
+	}
+
+	stats := &CaseStats{
+		Total:      result.Total,
+		ByStatus:   make(map[string]int),
+		BySeverity: make(map[string]int),
+	}
+
+	if result.Aggs != nil {
+		var aggs struct {
+			ByStatus struct {
+				Buckets []struct {
+					Key      string `json:"key"`
+					DocCount int    `json:"doc_count"`
+				} `json:"buckets"`
+			} `json:"by_status"`
+			BySeverity struct {
+				Buckets []struct {
+					Key      string `json:"key"`
+					DocCount int    `json:"doc_count"`
+				} `json:"buckets"`
+			} `json:"by_severity"`
+		}
+		if err := json.Unmarshal(result.Aggs, &aggs); err == nil {
+			for _, b := range aggs.ByStatus.Buckets {
+				stats.ByStatus[b.Key] = b.DocCount
+			}
+			for _, b := range aggs.BySeverity.Buckets {
+				stats.BySeverity[b.Key] = b.DocCount
+			}
+		}
+	}
+
+	return stats, nil
+}

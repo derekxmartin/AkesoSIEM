@@ -198,7 +198,7 @@ Each scenario produces events across multiple source types (EDR, AV, DLP, NDR, W
 | P3 | Syslog Ingestion (TCP/UDP/TLS, RFC 5424 & 3164) | 4 | P1 | Complete |
 | P4 | Sigma Single-Event Detection Engine | 5 | P1 | Complete |
 | P5 | Sigma Correlation Rules (event_count, value_count, temporal) | 5 | P4 | Complete |
-| P6 | Query Language + REST API | 4 | P0, P1 | Pending |
+| P6 | Query Language + REST API | 4 | P0, P1 | Complete |
 | P7 | React Dashboard + Source Configuration | 10 | P6 | Pending |
 | P8 | CLI Management Tool | 4 | P0–P7 | Pending |
 | P9 | Case Management (escalation, observables, timeline) | 7 | P4, P7 | Pending |

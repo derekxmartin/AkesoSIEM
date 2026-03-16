@@ -16,6 +16,7 @@ import (
 	"github.com/go-chi/cors"
 
 	"github.com/SentinelSIEM/sentinel-siem/internal/auth"
+	"github.com/SentinelSIEM/sentinel-siem/internal/cases"
 	"github.com/SentinelSIEM/sentinel-siem/internal/common"
 	"github.com/SentinelSIEM/sentinel-siem/internal/config"
 	"github.com/SentinelSIEM/sentinel-siem/internal/normalize"
@@ -102,6 +103,13 @@ func main() {
 	loginLimiter := auth.NewLoginRateLimiter(5, 30*time.Second)
 	authHandler := auth.NewAPIHandler(authService, loginLimiter)
 
+	// Initialize case management services.
+	caseIndex := esStore.Prefix() + "-cases"
+	caseSvc := cases.NewService(esStore, caseIndex)
+	alertIndex := esStore.Prefix() + "-alerts-*"
+	escalationSvc := cases.NewEscalationService(caseSvc, esStore, alertIndex)
+	caseHandler := cases.NewCaseAPIHandler(caseSvc, escalationSvc)
+
 	// Create admin handler for user and API key management.
 	adminHandler := auth.NewAdminHandler(authService, keyStore)
 
@@ -151,6 +159,9 @@ func main() {
 
 		// Source management routes.
 		sourceHandler.Routes(r)
+
+		// Case management routes.
+		caseHandler.Routes(r)
 
 		// Admin routes (admin role required).
 		adminHandler.Routes(r)

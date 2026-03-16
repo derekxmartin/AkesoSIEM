@@ -456,6 +456,33 @@ func (s *Store) UpdateDoc(ctx context.Context, index, id string, doc []byte) err
 	return s.IndexDoc(ctx, index, id, doc)
 }
 
+// UpdateFields performs a partial update on a document, merging the given
+// fields into the existing document. Used for adding escalation metadata
+// to alert documents without replacing the full document.
+func (s *Store) UpdateFields(ctx context.Context, index, id string, fields map[string]any) error {
+	body, err := json.Marshal(map[string]any{"doc": fields})
+	if err != nil {
+		return fmt.Errorf("marshaling partial update: %w", err)
+	}
+
+	res, err := s.client.Update(
+		index,
+		id,
+		bytes.NewReader(body),
+		s.client.Update.WithContext(ctx),
+		s.client.Update.WithRefresh("true"),
+	)
+	if err != nil {
+		return fmt.Errorf("partial update: %w", err)
+	}
+	defer res.Body.Close()
+
+	if res.IsError() {
+		return fmt.Errorf("partial update error: %s", res.String())
+	}
+	return nil
+}
+
 // Prefix returns the configured index prefix.
 func (s *Store) Prefix() string {
 	return s.prefix

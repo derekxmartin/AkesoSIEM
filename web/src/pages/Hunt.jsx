@@ -1,4 +1,5 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import usePageTitle from '../hooks/usePageTitle'
 import { subDays } from 'date-fns'
@@ -12,7 +13,8 @@ import { generateMockResults, generateHistogramBuckets, computeFieldStats } from
 
 export default function Hunt() {
   usePageTitle('Hunt')
-  const [query, setQuery] = useState('')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [query, setQuery] = useState(searchParams.get('q') || '')
   const [timeRange, setTimeRange] = useState({ from: subDays(new Date(), 1), to: new Date() })
   const [refreshInterval, setRefreshInterval] = useState(0)
   const [isSearching, setIsSearching] = useState(false)
@@ -46,6 +48,15 @@ export default function Hunt() {
       setIsSearching(false)
     }, 400)
   }, [query, pageSize])
+
+  // Auto-search when arriving with ?q= parameter.
+  useEffect(() => {
+    const q = searchParams.get('q')
+    if (q && results.length === 0) {
+      handleSearch()
+      setSearchParams({}, { replace: true })
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleBrushZoom = useCallback((brushRange) => {
     setTimeRange(brushRange)

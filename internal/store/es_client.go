@@ -271,3 +271,112 @@ func (s *Store) SearchRaw(ctx context.Context, index string, body map[string]any
 
 	return result, nil
 }
+
+// --- APIKeyBackend implementation ---
+// These methods implement common.APIKeyBackend so the Store can be used
+// as the backing store for API key management.
+
+// IndexDoc indexes a single JSON document with the given ID.
+func (s *Store) IndexDoc(ctx context.Context, index, id string, doc []byte) error {
+	res, err := s.client.Index(
+		index,
+		bytes.NewReader(doc),
+		s.client.Index.WithContext(ctx),
+		s.client.Index.WithDocumentID(id),
+		s.client.Index.WithRefresh("true"),
+	)
+	if err != nil {
+		return fmt.Errorf("index doc: %w", err)
+	}
+	defer res.Body.Close()
+
+	if res.IsError() {
+		return fmt.Errorf("index doc error: %s", res.String())
+	}
+	return nil
+}
+
+// GetDoc retrieves a single document by ID.
+func (s *Store) GetDoc(ctx context.Context, index, id string) ([]byte, error) {
+	res, err := s.client.Get(
+		index,
+		id,
+		s.client.Get.WithContext(ctx),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("get doc: %w", err)
+	}
+	defer res.Body.Close()
+
+	if res.IsError() {
+		return nil, fmt.Errorf("get doc error: %s", res.String())
+	}
+
+	rawBody, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, fmt.Errorf("reading get response: %w", err)
+	}
+
+	var parsed struct {
+		Source json.RawMessage `json:"_source"`
+	}
+	if err := json.Unmarshal(rawBody, &parsed); err != nil {
+		return nil, fmt.Errorf("decoding get response: %w", err)
+	}
+
+	return parsed.Source, nil
+}
+
+// SearchDocs executes a search and returns the raw _source of each hit.
+func (s *Store) SearchDocs(ctx context.Context, index string, query map[string]any) ([]json.RawMessage, error) {
+	body, err := json.Marshal(query)
+	if err != nil {
+		return nil, fmt.Errorf("marshaling search: %w", err)
+	}
+
+	res, err := s.client.Search(
+		s.client.Search.WithContext(ctx),
+		s.client.Search.WithIndex(index),
+		s.client.Search.WithBody(bytes.NewReader(body)),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("search docs: %w", err)
+	}
+	defer res.Body.Close()
+
+	if res.IsError() {
+		return nil, fmt.Errorf("search docs error: %s", res.String())
+	}
+
+	rawBody, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, fmt.Errorf("reading search response: %w", err)
+	}
+
+	var parsed struct {
+		Hits struct {
+			Hits []struct {
+				Source json.RawMessage `json:"_source"`
+			} `json:"hits"`
+		} `json:"hits"`
+	}
+	if err := json.Unmarshal(rawBody, &parsed); err != nil {
+		return nil, fmt.Errorf("decoding search response: %w", err)
+	}
+
+	docs := make([]json.RawMessage, len(parsed.Hits.Hits))
+	for i, hit := range parsed.Hits.Hits {
+		docs[i] = hit.Source
+	}
+	return docs, nil
+}
+
+// UpdateDoc updates a document by ID (full document replace).
+func (s *Store) UpdateDoc(ctx context.Context, index, id string, doc []byte) error {
+	return s.IndexDoc(ctx, index, id, doc)
+}
+
+// Prefix returns the configured index prefix.
+func (s *Store) Prefix() string {
+	return s.prefix
+}

@@ -1,8 +1,20 @@
-import { Bars3Icon, BellIcon, SparklesIcon } from '@heroicons/react/24/outline'
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Bars3Icon, BellIcon, SparklesIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import ThemeToggle from './ThemeToggle'
 import UserMenu from './UserMenu'
 
 export default function Header({ onMobileMenuToggle }) {
+  const [searchQuery, setSearchQuery] = useState('')
+  const navigate = useNavigate()
+
+  function handleSearch(e) {
+    if (e.key === 'Enter' && searchQuery.trim()) {
+      navigate(`/hunt?q=${encodeURIComponent(searchQuery.trim())}`)
+      setSearchQuery('')
+    }
+  }
+
   return (
     <header className="sticky top-0 z-30 h-16 flex items-center gap-4 px-4 border-b border-slate-200 bg-white/80 dark:border-slate-700 dark:bg-slate-900/80 backdrop-blur-md">
       {/* Mobile menu button */}
@@ -20,14 +32,17 @@ export default function Header({ onMobileMenuToggle }) {
         </span>
       </div>
 
-      {/* Search placeholder (center) */}
+      {/* Global search — navigates to Hunt page */}
       <div className="flex-1 max-w-lg mx-auto">
         <div className="relative">
+          <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <input
             type="text"
-            placeholder="Search..."
-            disabled
-            className="w-full px-4 py-2 rounded-lg bg-slate-100 border border-slate-200 text-slate-600 placeholder-slate-400 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:placeholder-slate-500 text-sm cursor-not-allowed opacity-60"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={handleSearch}
+            placeholder="Search events... (Enter to hunt)"
+            className="w-full pl-9 pr-4 py-2 rounded-lg bg-slate-100 border border-slate-200 text-slate-600 placeholder-slate-400 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500"
           />
         </div>
       </div>

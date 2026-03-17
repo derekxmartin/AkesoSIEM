@@ -168,6 +168,7 @@ func generateEvent(i int, sourceTypes []string) json.RawMessage {
 		}`, i%100, i%1000, ts, i, ts, 1000+i%9000, 1000+i%9000)
 	case "sentinel_ndr":
 		// NDR envelope: needs event_type, ECS fields at top level.
+		// Include ndr.session with community_id to avoid parser warnings.
 		raw = fmt.Sprintf(`{
 			"source_type": "sentinel_ndr",
 			"timestamp": %q,
@@ -175,8 +176,9 @@ func generateEvent(i int, sourceTypes []string) json.RawMessage {
 			"event": {"category": ["network"], "type": ["connection"], "action": "connection_end"},
 			"source": {"ip": "192.168.%d.%d", "port": %d},
 			"destination": {"ip": "10.%d.%d.%d", "port": 443},
-			"network": {"transport": "tcp", "bytes": %d}
-		}`, ts, i%256, (i/256)%256, 1024+i%64000, i%256, (i/256)%256, (i/65536)%256, 100+i%100000)
+			"network": {"transport": "tcp", "bytes": %d},
+			"ndr": {"session": {"community_id": "1:test/%d", "conn_state": "SF", "duration": 1.5}}
+		}`, ts, i%256, (i/256)%256, 1024+i%64000, i%256, (i/256)%256, (i/65536)%256, 100+i%100000, i)
 	case "winevt_json":
 		// WinEvt JSON envelope.
 		raw = fmt.Sprintf(`{

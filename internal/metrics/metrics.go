@@ -180,6 +180,58 @@ var AuthRateLimited = prometheus.NewCounter(prometheus.CounterOpts{
 	Help:      "Total requests rejected by login rate limiter.",
 })
 
+// ---- Dead Letter Queue ----
+
+// DLQEventsTotal counts events sent to the dead letter queue by reason.
+var DLQEventsTotal = prometheus.NewCounterVec(prometheus.CounterOpts{
+	Namespace: namespace,
+	Subsystem: "dlq",
+	Name:      "events_total",
+	Help:      "Total events sent to the dead letter queue.",
+}, []string{"reason"})
+
+// DLQFlushErrors counts failed attempts to flush DLQ entries to Elasticsearch.
+var DLQFlushErrors = prometheus.NewCounter(prometheus.CounterOpts{
+	Namespace: namespace,
+	Subsystem: "dlq",
+	Name:      "flush_errors_total",
+	Help:      "Total errors flushing DLQ entries to Elasticsearch.",
+})
+
+// DLQBufferSize reports the current number of buffered DLQ entries.
+var DLQBufferSize = prometheus.NewGauge(prometheus.GaugeOpts{
+	Namespace: namespace,
+	Subsystem: "dlq",
+	Name:      "buffer_size",
+	Help:      "Current number of buffered DLQ entries awaiting flush.",
+})
+
+// ---- Alert Retry Queue ----
+
+// AlertRetryTotal counts alert indexing retry attempts.
+var AlertRetryTotal = prometheus.NewCounter(prometheus.CounterOpts{
+	Namespace: namespace,
+	Subsystem: "alert",
+	Name:      "retry_total",
+	Help:      "Total alert indexing retry attempts.",
+})
+
+// AlertRetryExhausted counts alerts that exhausted all retries and were sent to the DLQ.
+var AlertRetryExhausted = prometheus.NewCounter(prometheus.CounterOpts{
+	Namespace: namespace,
+	Subsystem: "alert",
+	Name:      "retry_exhausted_total",
+	Help:      "Total alerts that exhausted retries and were sent to the DLQ.",
+})
+
+// AlertRetryQueueSize reports the current number of alerts queued for retry.
+var AlertRetryQueueSize = prometheus.NewGauge(prometheus.GaugeOpts{
+	Namespace: namespace,
+	Subsystem: "alert",
+	Name:      "retry_queue_size",
+	Help:      "Current number of alerts queued for retry.",
+})
+
 func init() {
 	// Register all metrics with the custom registry.
 	Registry.MustRegister(
@@ -212,6 +264,16 @@ func init() {
 		// Auth.
 		AuthLoginAttempts,
 		AuthRateLimited,
+
+		// Dead Letter Queue.
+		DLQEventsTotal,
+		DLQFlushErrors,
+		DLQBufferSize,
+
+		// Alert Retry.
+		AlertRetryTotal,
+		AlertRetryExhausted,
+		AlertRetryQueueSize,
 	)
 
 	// Also register Go runtime and process collectors.

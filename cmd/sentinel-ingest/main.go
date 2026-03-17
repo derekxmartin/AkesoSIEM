@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/SentinelSIEM/sentinel-siem/internal/alert"
 	"github.com/SentinelSIEM/sentinel-siem/internal/config"
 	"github.com/SentinelSIEM/sentinel-siem/internal/correlate"
 	"github.com/SentinelSIEM/sentinel-siem/internal/ingest"
@@ -88,6 +89,17 @@ func main() {
 	// Build the ingest pipeline: HTTP → normalize → ES → rule engine.
 	// esStore implements both Indexer and HostScoreIndexer.
 	pipeline := ingest.NewPipeline(engine, esStore, cfg.Elasticsearch.IndexPrefix, esStore, ruleLoader, dedupCache)
+
+	// Create dead letter queue for failed events.
+	dlq := ingest.NewDeadLetterQueue(esStore, cfg.Elasticsearch.IndexPrefix)
+	pipeline.SetDLQ(dlq)
+	log.Println("Dead letter queue enabled")
+
+	// Create alert retry queue (3 retries with exponential backoff → DLQ).
+	alertRetryQ := alert.NewRetryQueue(esStore, dlq)
+	pipeline.SetAlertRetryQueue(alertRetryQ)
+	log.Println("Alert retry queue enabled (max 3 retries)")
+
 	listener := ingest.NewHTTPListener(cfg.Ingest, pipeline.Handle)
 
 	// Mount the reload endpoint for CLI-triggered hot-reload.
@@ -158,6 +170,16 @@ func main() {
 
 	sm.Register("stop correlation state manager", func(_ context.Context) error {
 		stateManager.Stop()
+		return nil
+	})
+
+	sm.Register("flush alert retry queue", func(_ context.Context) error {
+		alertRetryQ.Stop()
+		return nil
+	})
+
+	sm.Register("flush dead letter queue", func(_ context.Context) error {
+		dlq.Stop()
 		return nil
 	})
 

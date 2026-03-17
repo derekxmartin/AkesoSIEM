@@ -9,6 +9,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/SentinelSIEM/sentinel-siem/internal/alert"
 	"github.com/SentinelSIEM/sentinel-siem/internal/common"
 	"github.com/SentinelSIEM/sentinel-siem/internal/correlate"
 	"github.com/SentinelSIEM/sentinel-siem/internal/metrics"
@@ -20,12 +21,16 @@ import (
 // HTTPListener → normalize.Engine → store.Indexer (Elasticsearch).
 // Optionally evaluates events against a RuleEvaluator and indexes alerts.
 // NDR host_score events are additionally upserted to a dedicated index.
+// Failed events are routed to the dead letter queue (DLQ), and failed
+// alert batches are retried via the alert retry queue.
 type Pipeline struct {
 	engine         *normalize.Engine
 	indexer        store.Indexer
 	hostScoreIndex store.HostScoreIndexer
 	ruleEvaluator  correlate.RuleEvaluator
 	dedupCache     *correlate.DedupCache
+	dlq            *DeadLetterQueue
+	alertRetryQ    *alert.RetryQueue
 	prefix         string
 
 	// In-flight tracking for graceful shutdown.
@@ -35,7 +40,7 @@ type Pipeline struct {
 }
 
 // NewPipeline creates an ingestion pipeline.
-// hostScoreIndex, ruleEvaluator, and dedupCache may be nil if not needed.
+// hostScoreIndex, ruleEvaluator, dedupCache, dlq, and alertRetryQ may be nil if not needed.
 func NewPipeline(engine *normalize.Engine, indexer store.Indexer, prefix string, hostScoreIndex store.HostScoreIndexer, ruleEvaluator correlate.RuleEvaluator, dedupCache *correlate.DedupCache) *Pipeline {
 	if prefix == "" {
 		prefix = "sentinel"
@@ -48,6 +53,18 @@ func NewPipeline(engine *normalize.Engine, indexer store.Indexer, prefix string,
 		dedupCache:     dedupCache,
 		prefix:         prefix,
 	}
+}
+
+// SetDLQ attaches a dead letter queue to the pipeline. Failed events
+// will be routed to the DLQ instead of being silently dropped.
+func (p *Pipeline) SetDLQ(dlq *DeadLetterQueue) {
+	p.dlq = dlq
+}
+
+// SetAlertRetryQueue attaches an alert retry queue to the pipeline. Failed
+// alert indexing operations will be retried instead of being silently dropped.
+func (p *Pipeline) SetAlertRetryQueue(rq *alert.RetryQueue) {
+	p.alertRetryQ = rq
 }
 
 // Drain waits for all in-flight event batches to finish processing.
@@ -79,11 +96,20 @@ func (p *Pipeline) Handle(rawEvents []json.RawMessage) {
 	pipelineStart := time.Now()
 	metrics.BatchSize.Observe(float64(len(rawEvents)))
 
-	// Normalize.
-	events, errs := p.engine.NormalizeBatch(rawEvents)
-	for _, err := range errs {
-		log.Printf("[pipeline] normalization error: %v", err)
-		metrics.EventsDropped.WithLabelValues("normalization").Inc()
+	// Normalize each event individually so we can route failures to the DLQ
+	// with the correct raw payload.
+	var events []*common.ECSEvent
+	for _, raw := range rawEvents {
+		event, err := p.engine.Normalize(raw)
+		if err != nil {
+			log.Printf("[pipeline] normalization error: %v", err)
+			metrics.EventsDropped.WithLabelValues("normalization").Inc()
+			if p.dlq != nil {
+				p.dlq.SendRaw(raw, err)
+			}
+			continue
+		}
+		events = append(events, event)
 	}
 
 	if len(events) == 0 {
@@ -111,6 +137,16 @@ func (p *Pipeline) Handle(rawEvents []json.RawMessage) {
 		if err := p.indexer.BulkIndex(ctx, index, batch); err != nil {
 			log.Printf("[pipeline] indexing error for %s: %v", index, err)
 			metrics.EventsDropped.WithLabelValues("indexing").Add(float64(len(batch)))
+			// Route failed events to the dead letter queue.
+			if p.dlq != nil {
+				for _, event := range batch {
+					data, marshalErr := json.Marshal(event)
+					if marshalErr != nil {
+						continue
+					}
+					p.dlq.Send(DLQReasonIndexFailure, event.SourceType, data, err, 0, index)
+				}
+			}
 		} else {
 			p.processed.Add(int64(len(batch)))
 			metrics.EventsIndexed.WithLabelValues(index).Add(float64(len(batch)))
@@ -175,6 +211,10 @@ func (p *Pipeline) evaluateAndIndexAlerts(ctx context.Context, events []*common.
 	for index, batch := range alertGroups {
 		if err := p.indexer.BulkIndex(ctx, index, batch); err != nil {
 			log.Printf("[pipeline] alert indexing error for %s: %v", index, err)
+			// Route failed alert batch to the retry queue.
+			if p.alertRetryQ != nil {
+				p.alertRetryQ.Enqueue(index, batch, err)
+			}
 		} else {
 			log.Printf("[pipeline] indexed %d alert(s) to %s", len(batch), index)
 		}

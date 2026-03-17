@@ -19,6 +19,7 @@ func TestRegistryCollectsAllMetrics(t *testing.T) {
 	SyslogMessages.WithLabelValues("tcp")
 	AuthLoginAttempts.WithLabelValues("success")
 	IndexLatency.WithLabelValues("test-index")
+	DLQEventsTotal.WithLabelValues("malformed")
 
 	// Gather all registered metrics.
 	families, err := Registry.Gather()
@@ -52,6 +53,12 @@ func TestRegistryCollectsAllMetrics(t *testing.T) {
 		"sentinel_query_requests_total",
 		"sentinel_auth_login_attempts_total",
 		"sentinel_auth_rate_limited_total",
+		"sentinel_dlq_events_total",
+		"sentinel_dlq_flush_errors_total",
+		"sentinel_dlq_buffer_size",
+		"sentinel_alert_retry_total",
+		"sentinel_alert_retry_exhausted_total",
+		"sentinel_alert_retry_queue_size",
 	}
 
 	for _, name := range expected {

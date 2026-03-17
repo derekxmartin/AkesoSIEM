@@ -8,9 +8,14 @@
 
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+if [[ -n "${BASH_SOURCE[0]:-}" && "${BASH_SOURCE[0]}" == */* ]]; then
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+else
+    PROJECT_DIR="$(pwd)"
+fi
 cd "$PROJECT_DIR"
+SCRIPT_DIR="$PROJECT_DIR/scripts"
 
 BINDIR="bin"
 ES_HOST="${ES_HOST:-http://localhost:9200}"

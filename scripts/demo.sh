@@ -8,9 +8,17 @@
 
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+# Resolve project root: if run via "bash scripts/demo.sh", BASH_SOURCE
+# gives the relative path; if run via make (cmd.exe → bash), we fall back
+# to the current working directory.
+if [[ -n "${BASH_SOURCE[0]:-}" && "${BASH_SOURCE[0]}" == */* ]]; then
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+else
+    PROJECT_DIR="$(pwd)"
+fi
 cd "$PROJECT_DIR"
+SCRIPT_DIR="$PROJECT_DIR/scripts"
 
 BINDIR="bin"
 ES_HOST="${ES_HOST:-http://localhost:9200}"

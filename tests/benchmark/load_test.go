@@ -6,7 +6,7 @@
 // Run with:
 //
 //	go test ./tests/benchmark/ -v -run TestLoadTest -timeout 15m
-//	go test ./tests/benchmark/ -v -run TestLoadTest -load.duration=1m  # short run
+//	go test ./tests/benchmark/ -v -run TestLoadTest -timeout 2m -load.duration=1m
 package benchmark
 
 import (
@@ -32,10 +32,16 @@ import (
 )
 
 var (
-	loadDuration = flag.Duration("load.duration", 10*time.Minute, "duration of load test")
-	targetEPS    = flag.Int("load.eps", 1000, "target events per second")
-	batchSize    = flag.Int("load.batch", 50, "events per batch")
+	loadDuration *time.Duration
+	targetEPS    *int
+	batchSize    *int
 )
+
+func init() {
+	loadDuration = flag.Duration("load.duration", 10*time.Minute, "duration of load test")
+	targetEPS = flag.Int("load.eps", 1000, "target events per second")
+	batchSize = flag.Int("load.batch", 50, "events per batch")
+}
 
 // mockIndexer counts indexed events without touching Elasticsearch.
 type mockIndexer struct {
@@ -193,8 +199,6 @@ func generateEvent(i int, sourceTypes []string) json.RawMessage {
 
 // TestLoadTest runs the sustained load test: 1000 eps × 10 min.
 func TestLoadTest(t *testing.T) {
-	flag.Parse()
-
 	duration := *loadDuration
 	eps := *targetEPS
 	batch := *batchSize

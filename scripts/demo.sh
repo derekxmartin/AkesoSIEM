@@ -31,7 +31,7 @@ warn()  { echo -e "${YELLOW}[ warn ]${NC} $*"; }
 
 # ─── Pre-check ────────────────────────────────────────────────────────────────
 EXT=""
-if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" || "$OSTYPE" == "win32" ]]; then
+if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" || "$OSTYPE" == "win32" ]] || [[ "$(uname -s)" == MINGW* ]] || [[ -n "$WINDIR" ]]; then
     EXT=".exe"
 fi
 

@@ -115,11 +115,11 @@ func isCorrelationType(t string) bool {
 	return false
 }
 
-// SingleEventRules returns only non-correlation rules.
+// SingleEventRules returns only non-correlation, non-component rules.
 func (reg *RuleRegistry) SingleEventRules() []*SigmaRule {
 	var result []*SigmaRule
 	for _, r := range reg.all {
-		if !isCorrelationType(r.Type) {
+		if !isCorrelationType(r.Type) && r.Type != "component" {
 			result = append(result, r)
 		}
 	}

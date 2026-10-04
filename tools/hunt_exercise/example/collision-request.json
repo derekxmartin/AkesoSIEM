@@ -1,0 +1,4 @@
+{
+  "query": "host.name IN (\"SYN-I2604A-01\", \"SYN-I2604A-02\", \"SYN-I2604A-03\", \"SYN-I2604A-04\")",
+  "size": 1
+}

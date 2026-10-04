@@ -1,0 +1,8 @@
+{
+  "query": "host.name IN (\"SYN-I2604A-01\", \"SYN-I2604A-02\", \"SYN-I2604A-03\", \"SYN-I2604A-04\") AND process.executable IN (\"C:\\\\Users\\\\lab.user\\\\AppData\\\\Local\\\\Cedar\\\\syncsvc.exe\") | sort @timestamp asc",
+  "size": 100,
+  "time_range": {
+    "from": "2026-10-04T12:00:00Z",
+    "to": "2026-10-04T14:00:01Z"
+  }
+}

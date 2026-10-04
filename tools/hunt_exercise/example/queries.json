@@ -1,0 +1,92 @@
+[
+  {
+    "id": "collision",
+    "hunt_text": "host.name IN (\"SYN-I2604A-01\", \"SYN-I2604A-02\", \"SYN-I2604A-03\", \"SYN-I2604A-04\")",
+    "window": "none"
+  },
+  {
+    "id": "all",
+    "hunt_text": "host.name IN (\"SYN-I2604A-01\", \"SYN-I2604A-02\", \"SYN-I2604A-03\", \"SYN-I2604A-04\") | sort @timestamp asc",
+    "window": "all"
+  },
+  {
+    "id": "timeline",
+    "hunt_text": "host.name IN (\"SYN-I2604A-01\") | sort @timestamp asc",
+    "window": "all"
+  },
+  {
+    "id": "near-alert",
+    "hunt_text": "host.name IN (\"SYN-I2604A-01\") | sort @timestamp asc",
+    "window": "initial"
+  },
+  {
+    "id": "common-name",
+    "hunt_text": "host.name IN (\"SYN-I2604A-01\", \"SYN-I2604A-02\", \"SYN-I2604A-03\", \"SYN-I2604A-04\") AND process.name IN (\"cmd.exe\", \"whoami.exe\") | sort @timestamp asc",
+    "window": "all"
+  },
+  {
+    "id": "basename",
+    "hunt_text": "host.name IN (\"SYN-I2604A-01\", \"SYN-I2604A-02\", \"SYN-I2604A-03\", \"SYN-I2604A-04\") AND process.name IN (\"syncsvc.exe\") | sort @timestamp asc",
+    "window": "all"
+  },
+  {
+    "id": "path",
+    "hunt_text": "host.name IN (\"SYN-I2604A-01\", \"SYN-I2604A-02\", \"SYN-I2604A-03\", \"SYN-I2604A-04\") AND process.executable IN (\"C:\\\\Users\\\\lab.user\\\\AppData\\\\Local\\\\Cedar\\\\syncsvc.exe\") | sort @timestamp asc",
+    "window": "all"
+  },
+  {
+    "id": "parent-path",
+    "hunt_text": "host.name IN (\"SYN-I2604A-01\", \"SYN-I2604A-02\", \"SYN-I2604A-03\", \"SYN-I2604A-04\") AND process.parent.executable IN (\"C:\\\\Users\\\\lab.user\\\\AppData\\\\Local\\\\Cedar\\\\syncsvc.exe\") | sort @timestamp asc",
+    "window": "all"
+  },
+  {
+    "id": "pid-pivot",
+    "hunt_text": "host.name IN (\"SYN-I2604A-01\") AND (process.pid = 1200 OR process.parent.pid = 1200) | sort @timestamp asc",
+    "window": "initial"
+  },
+  {
+    "id": "missing-command",
+    "hunt_text": "host.name IN (\"SYN-I2604A-01\", \"SYN-I2604A-02\", \"SYN-I2604A-03\", \"SYN-I2604A-04\") AND NOT process.command_line exists | sort @timestamp asc",
+    "window": "all"
+  },
+  {
+    "id": "missing-user",
+    "hunt_text": "host.name IN (\"SYN-I2604A-01\", \"SYN-I2604A-02\", \"SYN-I2604A-03\", \"SYN-I2604A-04\") AND NOT user.id exists | sort @timestamp asc",
+    "window": "all"
+  },
+  {
+    "id": "host-counts",
+    "hunt_text": "count() by host.name where host.name IN (\"SYN-I2604A-01\", \"SYN-I2604A-02\", \"SYN-I2604A-03\", \"SYN-I2604A-04\")",
+    "window": "all"
+  },
+  {
+    "id": "path-counts",
+    "hunt_text": "count() by host.name where host.name IN (\"SYN-I2604A-01\", \"SYN-I2604A-02\", \"SYN-I2604A-03\", \"SYN-I2604A-04\") AND process.executable IN (\"C:\\\\Users\\\\lab.user\\\\AppData\\\\Local\\\\Cedar\\\\syncsvc.exe\")",
+    "window": "all"
+  },
+  {
+    "id": "projection",
+    "hunt_text": "host.name IN (\"SYN-I2604A-01\", \"SYN-I2604A-02\", \"SYN-I2604A-03\", \"SYN-I2604A-04\") AND process.name IN (\"syncsvc.exe\") | sort @timestamp asc | fields @timestamp, host.name, process.pid, process.parent, process.executable, process.command_line, user.id",
+    "window": "all"
+  },
+  {
+    "id": "boundary",
+    "hunt_text": "host.name IN (\"SYN-I2604A-01\") AND process.pid IN (9000, 9004, 9008, 9012) AND @timestamp \u003e= \"2026-10-04T12:30:00Z\" AND @timestamp \u003c \"2026-10-04T12:35:00Z\" | sort @timestamp asc",
+    "window": "all"
+  },
+  {
+    "id": "boundary-picker",
+    "hunt_text": "host.name IN (\"SYN-I2604A-01\") AND process.pid IN (9000, 9004, 9008, 9012) | sort @timestamp asc",
+    "window": "boundary"
+  },
+  {
+    "id": "seed-event",
+    "hunt_text": "host.name IN (\"SYN-I2604A-01\") AND process.pid = 1100 AND @timestamp = \"2026-10-04T12:30:00Z\"",
+    "window": "all"
+  },
+  {
+    "id": "seed-alert",
+    "hunt_text": "host.name IN (\"SYN-I2604A-01\") AND event.kind = \"alert\" AND rule.id = \"a1b2c3d4-1012-4a1b-9c12-000000000012\" AND @timestamp = \"2026-10-04T12:30:00Z\"",
+    "window": "all"
+  }
+]

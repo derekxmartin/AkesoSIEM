@@ -1,0 +1,8 @@
+{
+  "query": "host.name IN (\"SYN-I2604A-01\") AND event.kind = \"alert\" AND rule.id = \"a1b2c3d4-1012-4a1b-9c12-000000000012\" AND @timestamp = \"2026-10-04T12:30:00Z\"",
+  "size": 100,
+  "time_range": {
+    "from": "2026-10-04T12:00:00Z",
+    "to": "2026-10-04T14:00:01Z"
+  }
+}

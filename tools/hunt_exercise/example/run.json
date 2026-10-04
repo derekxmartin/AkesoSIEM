@@ -1,0 +1,38 @@
+{
+  "seed": 73,
+  "start_utc": "2026-10-04T12:00:00Z",
+  "run_id": "I2604A",
+  "ndjson_sha256": "3e8a63d027a24e49988b819139f28aa24183742e0e8fae4c7325ec8dadc2608a",
+  "count": 400,
+  "hosts": [
+    "SYN-I2604A-01",
+    "SYN-I2604A-02",
+    "SYN-I2604A-03",
+    "SYN-I2604A-04"
+  ],
+  "counts_by_host": {
+    "SYN-I2604A-01": 190,
+    "SYN-I2604A-02": 90,
+    "SYN-I2604A-03": 65,
+    "SYN-I2604A-04": 55
+  },
+  "windows_utc_start_inclusive_end_exclusive": {
+    "all": {
+      "from": "2026-10-04T12:00:00Z",
+      "to": "2026-10-04T14:00:01Z"
+    },
+    "boundary": {
+      "from": "2026-10-04T12:30:00Z",
+      "to": "2026-10-04T12:35:00Z"
+    },
+    "initial": {
+      "from": "2026-10-04T12:29:00Z",
+      "to": "2026-10-04T12:37:00Z"
+    }
+  },
+  "starting_host": "SYN-I2604A-01",
+  "starting_event_utc": "2026-10-04T12:30:00Z",
+  "starting_raw_event_id": "29b6e0f9-4a4d-8762-90f3-5be69a24fd60",
+  "candidate_rule_id": "a1b2c3d4-1012-4a1b-9c12-000000000012",
+  "candidate_rule_title": "Command Prompt Spawned by Office Application"
+}

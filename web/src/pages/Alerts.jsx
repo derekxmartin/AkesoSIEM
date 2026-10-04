@@ -13,6 +13,7 @@ import SeverityBadge, { getSeverityBorderClass } from '../components/SeverityBad
 import StatusBadge from '../components/StatusBadge'
 import AlertFlyout from '../components/AlertFlyout'
 import { api } from '../lib/api'
+import { normalizeSeverity } from '../lib/severity'
 
 function flattenObject(obj, skipKeys = [], prefix = '') {
   const entries = []
@@ -52,7 +53,7 @@ function formatTimestamp(ts) {
   return d.toLocaleDateString()
 }
 
-const severityOrder = { critical: 0, high: 1, medium: 2, low: 3 }
+const severityOrder = { critical: 0, high: 1, medium: 2, low: 3, informational: 4, unknown: 5 }
 
 const columns = [
   {
@@ -181,7 +182,7 @@ export default function Alerts() {
           id: a._id || `alert-${i}`,
           _id: a._id,
           _index: a._index,
-          severity: a.event?.severity || a.rule?.severity || 'low',
+          severity: normalizeSeverity(a.event?.severity, a.rule?.severity),
           timestamp: a['@timestamp'] || '',
           ruleName: a.rule?.name || '—',
           ruleDescription: a.rule?.description || '',
@@ -221,7 +222,7 @@ export default function Alerts() {
           id: a._id,
           _id: a._id,
           _index: a._index,
-          severity: a.event?.severity || a.rule?.severity || 'low',
+          severity: normalizeSeverity(a.event?.severity, a.rule?.severity),
           timestamp: a['@timestamp'] || '',
           ruleName: a.rule?.name || '—',
           ruleDescription: a.rule?.description || '',
@@ -285,13 +286,14 @@ export default function Alerts() {
   function handleEscalate(id) {
     const alert = data.find((a) => a.id === id)
     if (!alert) return
+    const severity = normalizeSeverity(alert.severity)
+    // Reject unsupported severities before any optimistic update or request.
+    if (severity === 'informational' || severity === 'unknown') return
     updateAlertStatus(id, 'escalated')
     // Create a case from this alert.
     const caseBody = {
       title: alert.ruleName || 'Escalated Alert',
-      severity: typeof alert.severity === 'number'
-        ? ({ 1: 'critical', 2: 'high', 3: 'medium', 4: 'low', 5: 'low' }[alert.severity] || 'medium')
-        : (alert.severity || 'medium'),
+      severity,
       alert_ids: alert._id ? [alert._id] : [],
     }
     api.post('/cases', caseBody).catch((err) => {
@@ -362,6 +364,8 @@ export default function Alerts() {
             { value: 'high', label: 'High' },
             { value: 'medium', label: 'Medium' },
             { value: 'low', label: 'Low' },
+            { value: 'informational', label: 'Informational' },
+            { value: 'unknown', label: 'Unknown' },
           ]}
         />
         <FilterDropdown

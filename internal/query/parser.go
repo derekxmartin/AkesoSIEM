@@ -28,6 +28,11 @@ func Parse(input string) (*Query, error) {
 		pos:    0,
 	}
 
+	for _, token := range p.tokens {
+		if token.typ == tokInvalid {
+			return nil, fmt.Errorf("%s at position %d", token.value, token.pos)
+		}
+	}
 	q, err := p.parseQuery()
 	if err != nil {
 		return nil, err
@@ -46,6 +51,7 @@ type tokenType int
 
 const (
 	tokEOF tokenType = iota
+	tokInvalid
 	tokIdent
 	tokString   // "quoted string"
 	tokNumber   // integer
@@ -105,11 +111,21 @@ func tokenize(input string) []token {
 				}
 				i++
 			}
-			val := input[start:i]
-			if i < len(input) {
-				i++ // skip closing quote
+			if i == len(input) {
+				tokens = append(tokens, token{tokInvalid, "unterminated quoted value", pos})
+				break
 			}
-			tokens = append(tokens, token{tokString, val, pos})
+			// Decode escaped delimiters/backslashes, retaining other backslashes for
+			// compatibility with existing unescaped Windows paths.
+			var value strings.Builder
+			for j := start; j < i; j++ {
+				if input[j] == '\\' && j+1 < i && (input[j+1] == quote || input[j+1] == '\\') {
+					j++
+				}
+				value.WriteByte(input[j])
+			}
+			i++
+			tokens = append(tokens, token{tokString, value.String(), pos})
 		case '!':
 			if i+1 < len(input) && input[i+1] == '=' {
 				tokens = append(tokens, token{tokOperator, "!=", pos})

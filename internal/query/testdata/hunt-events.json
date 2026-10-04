@@ -1,0 +1,110 @@
+[
+  {
+    "_index": "akeso-events-2026.10.03",
+    "_id": "alpha-start",
+    "_source": {
+      "@timestamp": "2026-10-03T11:00:00.000Z",
+      "host": {
+        "name": "alpha"
+      },
+      "user": {
+        "name": "ACME\\a\"b*? | OR host.name = \"decoy\""
+      },
+      "event": {
+        "action": "logon_success",
+        "category": [
+          "authentication",
+          "authentication"
+        ],
+        "original": "<original> \"raw\"\\line\nnext"
+      },
+      "source": {
+        "ip": "192.0.2.10"
+      }
+    }
+  },
+  {
+    "_index": "akeso-events-2026.10.03",
+    "_id": "alpha-end",
+    "_source": {
+      "@timestamp": "2026-10-03T07:59:59.999-04:00",
+      "host": {
+        "name": "alpha"
+      },
+      "event": {
+        "action": "process_create"
+      },
+      "process": {
+        "name": "cmd.exe"
+      },
+      "message": "end inside",
+      "raw": {
+        "source_type": "isolated_fixture",
+        "timestamp": "2026-10-03T07:59:59.999-04:00",
+        "payload": "original raw object",
+        "nested": {
+          "untouched": true
+        }
+      }
+    }
+  },
+  {
+    "_index": "akeso-events-2026.10.03",
+    "_id": "bravo-inside",
+    "_source": {
+      "@timestamp": "2026-10-03T11:30:00Z",
+      "host": {
+        "name": "bravo"
+      },
+      "event": {
+        "action": "logon_success"
+      },
+      "destination": {
+        "ip": "192.0.2.20"
+      }
+    }
+  },
+  {
+    "_index": "akeso-events-2026.10.03",
+    "_id": "decoy",
+    "_source": {
+      "@timestamp": "2026-10-03T11:30:00Z",
+      "host": {
+        "name": "decoy"
+      },
+      "event": {
+        "action": "logon_success"
+      }
+    }
+  },
+  {
+    "_index": "akeso-events-2026.10.03",
+    "_id": "alpha-before",
+    "_source": {
+      "@timestamp": "2026-10-03T10:59:59.999Z",
+      "host": {
+        "name": "alpha"
+      }
+    }
+  },
+  {
+    "_index": "akeso-events-2026.10.03",
+    "_id": "bravo-at-end",
+    "_source": {
+      "@timestamp": "2026-10-03T12:00:00.000Z",
+      "host": {
+        "name": "bravo"
+      }
+    }
+  },
+  {
+    "_index": "akeso-events-2026.10.03",
+    "_id": "alpha-after",
+    "_source": {
+      "@timestamp": "2026-10-03T12:00:00.001Z",
+      "host": {
+        "name": "alpha"
+      }
+    }
+  }
+]

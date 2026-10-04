@@ -25,17 +25,18 @@ func NewHandler(rulesDir, logsourceMapPath string) *Handler {
 
 // ruleResponse is the JSON shape for a single rule in the list.
 type ruleResponse struct {
-	ID            string `json:"id"`
-	Name          string `json:"name"`
-	Description   string `json:"description"`
-	Severity      string `json:"severity"`
-	Status        string `json:"status"`
-	Author        string `json:"author"`
-	Tactic        string `json:"tactic,omitempty"`
-	TechniqueID   string `json:"techniqueId,omitempty"`
-	TechniqueName string `json:"techniqueName,omitempty"`
-	Type          string `json:"type"`
-	Enabled       bool   `json:"enabled"`
+	ID            string   `json:"id"`
+	Name          string   `json:"name"`
+	Description   string   `json:"description"`
+	Severity      string   `json:"severity"`
+	Status        string   `json:"status"`
+	Author        string   `json:"author"`
+	Tactic        string   `json:"tactic,omitempty"`
+	Tactics       []string `json:"tactics"`
+	TechniqueID   string   `json:"techniqueId,omitempty"`
+	TechniqueName string   `json:"techniqueName,omitempty"`
+	Type          string   `json:"type"`
+	Enabled       bool     `json:"enabled"`
 }
 
 // HandleList handles GET /api/v1/rules.
@@ -44,7 +45,7 @@ func (h *Handler) HandleList(w http.ResponseWriter, r *http.Request) {
 
 	resp := make([]ruleResponse, 0, len(rules))
 	for _, rule := range rules {
-		tactic, techniqueID, techniqueName := extractMITRE(rule.Tags)
+		tactic, techniqueID, techniqueName, tactics := extractMITRE(rule.Tags)
 		ruleType := "single"
 		if rule.Type != "" {
 			ruleType = rule.Type
@@ -57,6 +58,7 @@ func (h *Handler) HandleList(w http.ResponseWriter, r *http.Request) {
 			Status:        rule.Status,
 			Author:        rule.Author,
 			Tactic:        tactic,
+			Tactics:       tactics,
 			TechniqueID:   techniqueID,
 			TechniqueName: techniqueName,
 			Type:          ruleType,
@@ -73,7 +75,9 @@ func (h *Handler) HandleList(w http.ResponseWriter, r *http.Request) {
 
 // extractMITRE pulls tactic and technique from Sigma tags.
 // Sigma convention: "attack.tactic_name", "attack.t1234.001"
-func extractMITRE(tags []string) (tactic, techniqueID, techniqueName string) {
+func extractMITRE(tags []string) (tactic, techniqueID, techniqueName string, tactics []string) {
+	tactics = make([]string, 0)
+	seen := make(map[string]bool)
 	for _, tag := range tags {
 		if len(tag) > 7 && tag[:7] == "attack." {
 			rest := tag[7:]
@@ -83,6 +87,10 @@ func extractMITRE(tags []string) (tactic, techniqueID, techniqueName string) {
 			} else {
 				// Tactic name like "credential_access"
 				tactic = rest
+				if !seen[rest] {
+					tactics = append(tactics, rest)
+					seen[rest] = true
+				}
 			}
 		}
 	}

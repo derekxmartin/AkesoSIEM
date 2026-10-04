@@ -157,10 +157,11 @@ type SearchResult struct {
 // SearchRawResult holds the full response from a raw ES search body,
 // including aggregation results.
 type SearchRawResult struct {
-	Total int
-	Hits  []json.RawMessage
-	Aggs  json.RawMessage // raw "aggregations" block, nil if none
-	TookMs int            // server-side time in milliseconds
+	Total        int
+	Hits         []json.RawMessage
+	EvidenceHits []json.RawMessage // ES hit envelopes; Hits remains source-only for other callers
+	Aggs         json.RawMessage   // raw "aggregations" block, nil if none
+	TookMs       int               // server-side time in milliseconds
 }
 
 // Search executes a query string search against an index and returns raw hits.
@@ -245,19 +246,28 @@ func (s *Store) SearchRaw(ctx context.Context, index string, body map[string]any
 	}
 
 	var parsed struct {
-		Took int `json:"took"`
+		Took     int  `json:"took"`
+		TimedOut bool `json:"timed_out"`
+		Shards   struct {
+			Failed int `json:"failed"`
+		} `json:"_shards"`
 		Hits struct {
 			Total struct {
 				Value int `json:"value"`
 			} `json:"total"`
-			Hits []struct {
-				Source json.RawMessage `json:"_source"`
-			} `json:"hits"`
+			Hits []json.RawMessage `json:"hits"`
 		} `json:"hits"`
 		Aggregations json.RawMessage `json:"aggregations"`
 	}
 	if err := json.Unmarshal(rawBody, &parsed); err != nil {
 		return nil, fmt.Errorf("decoding search response: %w", err)
+	}
+
+	if parsed.TimedOut || parsed.Shards.Failed > 0 {
+		return nil, fmt.Errorf("incomplete search response: timed_out=%t, failed_shards=%d", parsed.TimedOut, parsed.Shards.Failed)
+	}
+	if parsed.Hits.Hits == nil {
+		return nil, fmt.Errorf("invalid search response: missing hits array")
 	}
 
 	result := &SearchRawResult{
@@ -266,7 +276,14 @@ func (s *Store) SearchRaw(ctx context.Context, index string, body map[string]any
 		Aggs:   parsed.Aggregations,
 	}
 	for _, hit := range parsed.Hits.Hits {
-		result.Hits = append(result.Hits, hit.Source)
+		var document struct {
+			Source json.RawMessage `json:"_source"`
+		}
+		if err := json.Unmarshal(hit, &document); err != nil {
+			return nil, fmt.Errorf("decoding search hit: %w", err)
+		}
+		result.Hits = append(result.Hits, document.Source)
+		result.EvidenceHits = append(result.EvidenceHits, hit)
 	}
 
 	return result, nil

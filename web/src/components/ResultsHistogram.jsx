@@ -19,8 +19,11 @@ export default function ResultsHistogram({ data, onBrushChange, height, onHeight
 
   const handleBrushChange = useCallback((brushArea) => {
     if (!brushArea || brushArea.startIndex === undefined) return
-    const from = new Date(data[brushArea.startIndex].time)
-    const to = new Date(data[brushArea.endIndex].time)
+    const first = data[brushArea.startIndex]
+    const last = data[brushArea.endIndex]
+    if (!first || !last) return
+    const from = new Date(first.time)
+    const to = new Date(last.end)
     onBrushChange?.({ from, to })
   }, [data, onBrushChange])
 
@@ -57,13 +60,14 @@ export default function ResultsHistogram({ data, onBrushChange, height, onHeight
       {/* Header — always visible, acts as collapse toggle */}
       <button
         onClick={onToggleCollapse}
-        className="flex items-center justify-between w-full px-4 py-2 text-left hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors"
+        aria-expanded={!collapsed}
+        className="flex items-center justify-between w-full px-3 py-1 text-left hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-indigo-500"
       >
-        <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300">
+        <h3 className="text-xs font-medium text-slate-700 dark:text-slate-300">
           {totalEvents.toLocaleString()} events over time
         </h3>
         <div className="flex items-center gap-2">
-          {!collapsed && <span className="text-xs text-slate-400">Drag to zoom</span>}
+          {!collapsed && <span className="text-[11px] text-slate-600 dark:text-slate-400">Drag to zoom</span>}
           {collapsed
             ? <ChevronDownIcon className="h-4 w-4 text-slate-400" />
             : <ChevronUpIcon className="h-4 w-4 text-slate-400" />
@@ -74,7 +78,7 @@ export default function ResultsHistogram({ data, onBrushChange, height, onHeight
       {/* Chart — collapsible */}
       {!collapsed && (
         <>
-          <div className="px-4 pb-1">
+          <div className="px-3 pb-1">
             <ResponsiveContainer width="100%" height={height}>
               <BarChart data={data} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
                 <CartesianGrid
@@ -88,12 +92,16 @@ export default function ResultsHistogram({ data, onBrushChange, height, onHeight
                   tick={{ fontSize: 10, fill: isDark ? '#94a3b8' : '#64748b' }}
                   axisLine={{ stroke: isDark ? '#334155' : '#e2e8f0' }}
                   tickLine={false}
+                  minTickGap={64}
+                  interval="preserveStartEnd"
+                  height={22}
                 />
                 <YAxis
                   tick={{ fontSize: 10, fill: isDark ? '#94a3b8' : '#64748b' }}
                   axisLine={false}
                   tickLine={false}
                   width={35}
+                  tickCount={3}
                 />
                 <Tooltip content={<CustomTooltip />} />
                 <Bar

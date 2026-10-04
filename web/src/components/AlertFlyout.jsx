@@ -3,6 +3,7 @@ import { XMarkIcon } from '@heroicons/react/24/outline'
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react'
 import SeverityBadge from './SeverityBadge'
 import StatusBadge from './StatusBadge'
+import { normalizeSeverity } from '../lib/severity'
 
 function formatTimestamp(ts) {
   const d = new Date(ts)
@@ -107,6 +108,9 @@ function TimelineTab({ alert }) {
 export default function AlertFlyout({ alert, onClose, onAcknowledge, onEscalate, onCloseAlert }) {
   if (!alert) return null
 
+  const severity = normalizeSeverity(alert.severity)
+  const escalationUnsupported = severity === 'informational' || severity === 'unknown'
+
   return (
     <div className="fixed inset-y-0 right-0 z-40 w-[480px] max-w-full flex flex-col bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-700 shadow-2xl">
       {/* Header */}
@@ -152,6 +156,12 @@ export default function AlertFlyout({ alert, onClose, onAcknowledge, onEscalate,
         </TabPanels>
       </TabGroup>
 
+      {escalationUnsupported && (
+        <p id="case-escalation-unavailable" role="status" className="px-4 pt-3 text-sm text-slate-500 dark:text-slate-400">
+          Case escalation does not support {severity} severity yet.
+        </p>
+      )}
+
       {/* Footer actions */}
       <div className="flex items-center gap-2 p-4 border-t border-slate-200 dark:border-slate-700">
         {alert.status === 'new' && (
@@ -165,7 +175,9 @@ export default function AlertFlyout({ alert, onClose, onAcknowledge, onEscalate,
         {alert.status !== 'escalated' && alert.status !== 'closed' && (
           <button
             onClick={() => onEscalate?.(alert.id)}
-            className="flex-1 px-3 py-2 text-sm font-medium rounded-lg border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+            disabled={escalationUnsupported}
+            aria-describedby={escalationUnsupported ? 'case-escalation-unavailable' : undefined}
+            className="flex-1 px-3 py-2 text-sm font-medium rounded-lg border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
           >
             Escalate to Case
           </button>

@@ -25,21 +25,24 @@ type SearchRawResult struct {
 
 // QueryRequest is the JSON body for POST /api/v1/query.
 type QueryRequest struct {
-	Query string `json:"query"`          // AkesoSIEM query language string
-	Index string `json:"index"`          // ES index pattern (optional, defaults to prefix-*)
-	From  int    `json:"from,omitempty"` // pagination offset
-	Size  int    `json:"size,omitempty"` // page size (default 100, max 10000)
+	Query     string     `json:"query"`          // AkesoSIEM query language string
+	Index     string     `json:"index"`          // ES index pattern (optional, defaults to prefix-*)
+	From      int        `json:"from,omitempty"` // pagination offset
+	Size      int        `json:"size,omitempty"` // page size (default 100, max 10000)
+	TimeRange *TimeRange `json:"time_range,omitempty"`
 }
 
 // QueryResponse is the JSON response for POST /api/v1/query.
 type QueryResponse struct {
-	Total   int               `json:"total"`
-	Hits    []json.RawMessage `json:"hits"`
-	Aggs    json.RawMessage   `json:"aggs,omitempty"`
-	From    int               `json:"from"`
-	Size    int               `json:"size"`
-	TookMs  int               `json:"took_ms"`
-	QueryDSL map[string]any   `json:"query_dsl,omitempty"` // translated ES DSL for debugging
+	Total      int               `json:"total"`
+	Hits       []json.RawMessage `json:"hits"`
+	Aggs       json.RawMessage   `json:"aggs,omitempty"`
+	From       int               `json:"from"`
+	Size       int               `json:"size"`
+	TookMs     int               `json:"took_ms"`
+	ResultType string            `json:"result_type"`
+	TimeRange  *TimeRange        `json:"time_range,omitempty"`
+	QueryDSL   map[string]any    `json:"query_dsl,omitempty"` // translated ES DSL for debugging
 }
 
 // ErrorResponse is a standard error JSON body.
@@ -48,8 +51,8 @@ type ErrorResponse struct {
 }
 
 const (
-	defaultSize = 100
-	maxSize     = 10000
+	defaultSize  = 100
+	maxSize      = 10000
 	queryTimeout = 30 * time.Second
 )
 
@@ -57,6 +60,7 @@ const (
 type APIHandler struct {
 	searcher     Searcher
 	defaultIndex string
+	now          func() time.Time
 }
 
 // NewAPIHandler creates a new APIHandler with the given searcher and default index pattern.
@@ -64,6 +68,7 @@ func NewAPIHandler(searcher Searcher, defaultIndex string) *APIHandler {
 	return &APIHandler{
 		searcher:     searcher,
 		defaultIndex: defaultIndex,
+		now:          time.Now,
 	}
 }
 
@@ -101,6 +106,18 @@ func (h *APIHandler) HandleQuery(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	bounds, err := resolveTimeRange(req.TimeRange, h.now())
+	if err != nil {
+		writeError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	if bounds != nil {
+		translated.Query = map[string]any{"bool": map[string]any{
+			"must":   []any{translated.Query},
+			"filter": []any{map[string]any{"range": map[string]any{"@timestamp": map[string]any{"gte": bounds.From, "lt": bounds.To}}}},
+		}}
+	}
+
 	// Apply request-level pagination overrides.
 	if req.From > 0 {
 		translated.From = req.From
@@ -116,6 +133,17 @@ func (h *APIHandler) HandleQuery(w http.ResponseWriter, r *http.Request) {
 
 	// Build the full ES search body.
 	esBody := BuildSearchBody(translated)
+	// Report an exact match count, not Elasticsearch's default capped lower bound.
+	esBody["track_total_hits"] = true
+	resultType := "events"
+	if translated.Source != nil {
+		resultType = "fields"
+	}
+	if ast.Agg != nil {
+		resultType = "aggregation"
+		translated.Size = 0
+		esBody["size"] = 0
+	}
 
 	// Determine index.
 	index := req.Index
@@ -135,17 +163,19 @@ func (h *APIHandler) HandleQuery(w http.ResponseWriter, r *http.Request) {
 
 	// Build response.
 	resp := QueryResponse{
-		Total:    result.Total,
-		Hits:     result.Hits,
-		Aggs:     result.Aggs,
-		From:     translated.From,
-		Size:     translated.Size,
-		TookMs:   result.TookMs,
-		QueryDSL: esBody,
+		Total:      result.Total,
+		Hits:       result.Hits,
+		Aggs:       result.Aggs,
+		From:       translated.From,
+		Size:       translated.Size,
+		TookMs:     result.TookMs,
+		QueryDSL:   esBody,
+		ResultType: resultType,
+		TimeRange:  bounds,
 	}
 
 	// Ensure hits is never null in JSON.
-	if resp.Hits == nil {
+	if resp.Hits == nil || ast.Agg != nil {
 		resp.Hits = []json.RawMessage{}
 	}
 

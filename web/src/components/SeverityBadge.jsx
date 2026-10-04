@@ -1,3 +1,5 @@
+import { normalizeSeverity } from '../lib/severity'
+
 const severityConfig = {
   critical: {
     label: 'Critical',
@@ -23,14 +25,26 @@ const severityConfig = {
     badgeLight: 'bg-blue-50 text-blue-700 border-blue-200',
     border: 'border-l-blue-500',
   },
+  informational: {
+    label: 'Informational',
+    badge: 'dark:bg-slate-500/20 dark:text-slate-300 dark:border-slate-500/30',
+    badgeLight: 'bg-slate-50 text-slate-600 border-slate-200',
+    border: 'border-l-slate-400',
+  },
+  unknown: {
+    label: 'Unknown',
+    badge: 'dark:bg-slate-500/20 dark:text-slate-400 dark:border-slate-500/30',
+    badgeLight: 'bg-slate-50 text-slate-500 border-slate-200',
+    border: 'border-l-slate-300',
+  },
 }
 
 export function getSeverityBorderClass(severity) {
-  return severityConfig[severity]?.border || ''
+  return severityConfig[normalizeSeverity(severity)].border
 }
 
 export default function SeverityBadge({ severity }) {
-  const config = severityConfig[severity] || severityConfig.low
+  const config = severityConfig[normalizeSeverity(severity)]
   return (
     <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${config.badgeLight} dark:bg-opacity-100 ${config.badge}`}>
       {config.label}

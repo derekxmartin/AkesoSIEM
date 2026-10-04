@@ -8,6 +8,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "test:regression": "npm run build && playwright test --config=playwright.regression.config.ts",
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed",
     "screenshots": "playwright test --project=screenshots",

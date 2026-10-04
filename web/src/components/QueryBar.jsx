@@ -27,7 +27,7 @@ function fieldCompletion(context) {
   }))
 
   // Add operators
-  const operators = ['AND', 'OR', 'NOT', 'EXISTS', ':', '>=', '<=', '>', '<', '!=']
+  const operators = ['AND', 'OR', 'NOT', 'EXISTS', 'IN', '=', '>=', '<=', '>', '<', '!=']
   operators.forEach(op => {
     options.push({ label: op, type: 'keyword' })
   })
@@ -58,14 +58,14 @@ export default function QueryBar({ value, onChange, onSearch, isSearching }) {
 
   return (
     <div className="flex gap-2">
-      <div className="flex-1 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
+      <div className="flex-1 min-w-0 rounded-lg border border-slate-300 dark:border-slate-700 overflow-hidden focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500">
         <CodeMirror
           value={value}
           onChange={handleChange}
           height="36px"
           theme={isDark ? oneDark : lightTheme}
           extensions={extensions}
-          placeholder='Search events... e.g. event.action: "logon_failure" AND user.name: "admin"'
+          placeholder='Search events... e.g. event.action = "logon_failure" AND user.name = "admin"'
           basicSetup={{
             lineNumbers: false,
             foldGutter: false,
@@ -76,7 +76,7 @@ export default function QueryBar({ value, onChange, onSearch, isSearching }) {
       <button
         onClick={onSearch}
         disabled={isSearching}
-        className="flex items-center gap-2 px-4 py-1.5 rounded-lg bg-indigo-600 text-white font-medium text-sm hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shrink-0"
+        className="flex items-center gap-2 px-4 py-1.5 rounded-lg bg-indigo-600 text-white font-medium text-sm hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
       >
         <PlayIcon className="h-4 w-4" />
         {isSearching ? 'Searching...' : 'Search'}

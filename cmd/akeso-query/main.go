@@ -255,7 +255,7 @@ func (a *storeAdapter) SearchRaw(ctx context.Context, index string, body map[str
 	}
 	return &query.SearchRawResult{
 		Total:  result.Total,
-		Hits:   result.Hits,
+		Hits:   result.EvidenceHits,
 		Aggs:   result.Aggs,
 		TookMs: result.TookMs,
 	}, nil

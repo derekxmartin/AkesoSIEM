@@ -1,0 +1,72 @@
+[
+  {
+    "query": "",
+    "field": "user.name",
+    "value": "ACME\\a\"b*? | OR host.name = \"decoy\"",
+    "exclude": false,
+    "expected": "user.name IN (\"ACME\\\\a\\\"b*? | OR host.name = \\\"decoy\\\"\")"
+  },
+  {
+    "query": "host.name = \"alpha\" OR host.name = \"bravo\" | sort @timestamp desc | head 25",
+    "field": "user.name",
+    "value": "ACME\\a\"b*? | OR host.name = \"decoy\"",
+    "exclude": true,
+    "expected": "(host.name = \"alpha\" OR host.name = \"bravo\") AND NOT user.name IN (\"ACME\\\\a\\\"b*? | OR host.name = \\\"decoy\\\"\") | sort @timestamp desc | head 25"
+  },
+  {
+    "query": "count() by host.name",
+    "field": "event.action",
+    "value": "logon_success",
+    "exclude": false,
+    "expected": "count() by host.name where event.action IN (\"logon_success\")"
+  },
+  {
+    "query": "count() by host.name where message = \"where | quoted\" OR host.name = \"bravo\" | limit 5",
+    "field": "user.name",
+    "value": "a\\b\"c\nline",
+    "exclude": false,
+    "expected": "count() by host.name where (message = \"where | quoted\" OR host.name = \"bravo\") AND user.name IN (\"a\\\\b\\\"c\nline\") | limit 5"
+  },
+  {
+    "query": "*",
+    "field": "host.name",
+    "value": "alpha",
+    "exclude": false,
+    "expected": "host.name IN (\"alpha\")"
+  },
+  {
+    "query": "  *   | sort @timestamp desc | head 25 | fields host.name",
+    "field": "host.name",
+    "value": "alpha",
+    "exclude": false,
+    "expected": "host.name IN (\"alpha\") | sort @timestamp desc | head 25 | fields host.name"
+  },
+  {
+    "query": "(*) | limit 5",
+    "field": "host.name",
+    "value": "alpha",
+    "exclude": false,
+    "expected": "host.name IN (\"alpha\") | limit 5"
+  },
+  {
+    "query": "* | tail 5",
+    "field": "host.name",
+    "value": "alpha",
+    "exclude": true,
+    "expected": "NOT host.name IN (\"alpha\") | tail 5"
+  },
+  {
+    "query": "count() by host.name where * | sort host.name asc",
+    "field": "host.name",
+    "value": "alpha",
+    "exclude": false,
+    "expected": "count() by host.name where host.name IN (\"alpha\") | sort host.name asc"
+  },
+  {
+    "query": "count() by host.name where ( * )",
+    "field": "host.name",
+    "value": "alpha",
+    "exclude": true,
+    "expected": "count() by host.name where NOT host.name IN (\"alpha\")"
+  }
+]

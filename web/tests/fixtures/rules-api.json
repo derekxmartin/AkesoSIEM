@@ -1,0 +1,1456 @@
+{
+  "rules": [
+    {
+      "author": "AkesoSIEM",
+      "description": "Correlates Akeso AV quarantine events with Akeso DLP classification\nor policy violation events involving the same file. When a file that was\npreviously flagged by DLP as containing sensitive data is later quarantined\nby AV, this indicates malware specifically targeting sensitive documents —\na high-confidence indicator of targeted data theft.\n",
+      "enabled": true,
+      "id": "c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f",
+      "name": "AV + DLP - Malware Targeting Sensitive Documents",
+      "severity": "high",
+      "status": "experimental",
+      "tactic": "impact",
+      "tactics": [
+        "collection",
+        "impact"
+      ],
+      "techniqueId": "t1486",
+      "type": "single"
+    },
+    {
+      "author": "",
+      "description": "",
+      "enabled": true,
+      "id": "c3d4e5f6-a7b8-4c9d-0e1f-000000000001",
+      "name": "AV File Quarantined",
+      "severity": "",
+      "status": "experimental",
+      "tactics": [],
+      "type": "single"
+    },
+    {
+      "author": "",
+      "description": "",
+      "enabled": true,
+      "id": "c3d4e5f6-a7b8-4c9d-0e1f-000000000002",
+      "name": "DLP Sensitive File Flagged",
+      "severity": "",
+      "status": "experimental",
+      "tactics": [],
+      "type": "single"
+    },
+    {
+      "author": "",
+      "description": "",
+      "enabled": true,
+      "id": "c3d4e5f6-a7b8-4c9d-0e1f-000000000003",
+      "name": "AV + DLP Malware Targeting Sensitive Data Correlation",
+      "severity": "high",
+      "status": "experimental",
+      "tactics": [],
+      "type": "correlation"
+    },
+    {
+      "author": "AkesoSIEM",
+      "description": "Three-stage cross-source temporal correlation:\n1. EDR detects credential theft (LSASS access, mimikatz, sekurlsa)\n2. NDR detects lateral movement (SMB write or RDP connection from same source IP)\n3. EDR detects outbound data transfer to an external IP from same source IP\n\nAll three stages must occur in order within 30 minutes, correlated by\nsource.ip. This pattern represents a complete intrusion lifecycle spanning\ntwo products (EDR + NDR), from credential harvesting through exfiltration.\n",
+      "enabled": true,
+      "id": "d4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f01",
+      "name": "Cross-Source Attack Chain - Credential Theft to Lateral Movement to Data Exfiltration",
+      "severity": "critical",
+      "status": "experimental",
+      "tactic": "exfiltration",
+      "tactics": [
+        "credential_access",
+        "lateral_movement",
+        "exfiltration"
+      ],
+      "techniqueId": "t1041",
+      "type": "single"
+    },
+    {
+      "author": "",
+      "description": "",
+      "enabled": true,
+      "id": "d4e5f6a7-b8c9-4d0e-1f2a-a00000000001",
+      "name": "EDR Credential Theft Detected",
+      "severity": "",
+      "status": "experimental",
+      "tactics": [],
+      "type": "component"
+    },
+    {
+      "author": "",
+      "description": "",
+      "enabled": true,
+      "id": "d4e5f6a7-b8c9-4d0e-1f2a-a00000000002",
+      "name": "NDR Lateral Movement Detected",
+      "severity": "",
+      "status": "experimental",
+      "tactics": [],
+      "type": "component"
+    },
+    {
+      "author": "",
+      "description": "",
+      "enabled": true,
+      "id": "d4e5f6a7-b8c9-4d0e-1f2a-a00000000003",
+      "name": "EDR Outbound Data Transfer",
+      "severity": "",
+      "status": "experimental",
+      "tactics": [],
+      "type": "component"
+    },
+    {
+      "author": "",
+      "description": "",
+      "enabled": true,
+      "id": "d4e5f6a7-b8c9-4d0e-1f2a-a00000000004",
+      "name": "Cross-Source Credential Theft to Lateral Movement to Exfiltration",
+      "severity": "critical",
+      "status": "experimental",
+      "tactics": [],
+      "type": "correlation"
+    },
+    {
+      "author": "AkesoSIEM",
+      "description": "Detects a DLP removable media event (sensitive data copied to USB) on a\nmachine where the user authenticated with a different account than their\nusual pattern. This combination suggests a compromised account being used\nto exfiltrate data via physical media — a pattern common in insider threat\nand advanced persistent threat scenarios.\n",
+      "enabled": true,
+      "id": "d4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f80",
+      "name": "DLP + Windows - Sensitive USB Copy with Unusual Authentication",
+      "severity": "high",
+      "status": "experimental",
+      "tactic": "initial_access",
+      "tactics": [
+        "exfiltration",
+        "initial_access"
+      ],
+      "techniqueId": "t1078",
+      "type": "single"
+    },
+    {
+      "author": "",
+      "description": "",
+      "enabled": true,
+      "id": "d4e5f6a7-b8c9-4d0e-1f2a-000000000001",
+      "name": "DLP Sensitive USB Copy",
+      "severity": "",
+      "status": "experimental",
+      "tactics": [],
+      "type": "single"
+    },
+    {
+      "author": "",
+      "description": "",
+      "enabled": true,
+      "id": "d4e5f6a7-b8c9-4d0e-1f2a-000000000002",
+      "name": "Windows Interactive Logon",
+      "severity": "",
+      "status": "experimental",
+      "tactics": [],
+      "type": "single"
+    },
+    {
+      "author": "",
+      "description": "",
+      "enabled": true,
+      "id": "d4e5f6a7-b8c9-4d0e-1f2a-000000000003",
+      "name": "DLP + Windows Compromised Account Exfiltration Correlation",
+      "severity": "high",
+      "status": "experimental",
+      "tactics": [],
+      "type": "correlation"
+    },
+    {
+      "author": "AkesoSIEM",
+      "description": "Correlates akeso_edr behavioral detections (shellcode injection, suspicious\nprocess behavior) with Akeso AV static scan results on the same host.\nWhen both the EDR rule engine and AV scanner independently flag activity on\nthe same host within 5 minutes, confidence is significantly higher than\neither detection alone.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+      "name": "EDR + AV - Behavioral Detection Confirmed by Static Analysis",
+      "severity": "high",
+      "status": "experimental",
+      "tactic": "defense_evasion",
+      "tactics": [
+        "execution",
+        "defense_evasion"
+      ],
+      "techniqueId": "t1027",
+      "type": "single"
+    },
+    {
+      "author": "",
+      "description": "",
+      "enabled": true,
+      "id": "a1b2c3d4-e5f6-4a7b-8c9d-000000000001",
+      "name": "EDR Behavioral Detection",
+      "severity": "",
+      "status": "experimental",
+      "tactics": [],
+      "type": "single"
+    },
+    {
+      "author": "",
+      "description": "",
+      "enabled": true,
+      "id": "a1b2c3d4-e5f6-4a7b-8c9d-000000000002",
+      "name": "AV Malicious Scan Result",
+      "severity": "",
+      "status": "experimental",
+      "tactics": [],
+      "type": "single"
+    },
+    {
+      "author": "",
+      "description": "",
+      "enabled": true,
+      "id": "a1b2c3d4-e5f6-4a7b-8c9d-000000000003",
+      "name": "EDR + AV Behavioral Static Confirmation Correlation",
+      "severity": "high",
+      "status": "experimental",
+      "tactics": [],
+      "type": "correlation"
+    },
+    {
+      "author": "AkesoSIEM",
+      "description": "Detects a credential theft alert from akeso_edr followed by a DLP\npolicy violation on confidential data by the same user within 30 minutes.\nThis pattern indicates a potential compromise → data theft chain where\nstolen credentials are used to access sensitive files.\n",
+      "enabled": true,
+      "id": "b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e",
+      "name": "EDR + DLP - Credential Theft Followed by Sensitive Data Access",
+      "severity": "critical",
+      "status": "experimental",
+      "tactic": "exfiltration",
+      "tactics": [
+        "credential_access",
+        "collection",
+        "exfiltration"
+      ],
+      "techniqueId": "t1005",
+      "type": "single"
+    },
+    {
+      "author": "",
+      "description": "",
+      "enabled": true,
+      "id": "b2c3d4e5-f6a7-4b8c-9d0e-000000000001",
+      "name": "EDR Credential Theft Alert",
+      "severity": "",
+      "status": "experimental",
+      "tactics": [],
+      "type": "single"
+    },
+    {
+      "author": "",
+      "description": "",
+      "enabled": true,
+      "id": "b2c3d4e5-f6a7-4b8c-9d0e-000000000002",
+      "name": "DLP Confidential Data Access",
+      "severity": "",
+      "status": "experimental",
+      "tactics": [],
+      "type": "single"
+    },
+    {
+      "author": "",
+      "description": "",
+      "enabled": true,
+      "id": "b2c3d4e5-f6a7-4b8c-9d0e-000000000003",
+      "name": "EDR + DLP Credential Theft Data Access Correlation",
+      "severity": "critical",
+      "status": "experimental",
+      "tactics": [],
+      "type": "correlation"
+    },
+    {
+      "author": "AkesoSIEM",
+      "description": "Detects a complete attack lifecycle spanning all Akeso products:\n1. EDR detects lateral movement to a target host\n2. AV detects a dropped malicious tool on the target host\n3. DLP detects sensitive file access on the target host\n4. EDR detects outbound data transfer from the target host\n\nThis four-stage sequence within 60 minutes on the same host represents\na high-confidence, complete intrusion — from initial access through\ndata exfiltration. Each stage is independently detected by a different\nproduct, providing defense-in-depth visibility.\n",
+      "enabled": true,
+      "id": "e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8091",
+      "name": "Full Chain - Complete Attack Lifecycle Across All Products",
+      "severity": "critical",
+      "status": "experimental",
+      "tactic": "exfiltration",
+      "tactics": [
+        "lateral_movement",
+        "execution",
+        "collection",
+        "exfiltration"
+      ],
+      "techniqueId": "t1041",
+      "type": "single"
+    },
+    {
+      "author": "",
+      "description": "",
+      "enabled": true,
+      "id": "e5f6a7b8-c9d0-4e1f-2a3b-000000000001",
+      "name": "EDR Lateral Movement Detection",
+      "severity": "",
+      "status": "experimental",
+      "tactics": [],
+      "type": "single"
+    },
+    {
+      "author": "",
+      "description": "",
+      "enabled": true,
+      "id": "e5f6a7b8-c9d0-4e1f-2a3b-000000000002",
+      "name": "AV Dropped Tool Detection",
+      "severity": "",
+      "status": "experimental",
+      "tactics": [],
+      "type": "single"
+    },
+    {
+      "author": "",
+      "description": "",
+      "enabled": true,
+      "id": "e5f6a7b8-c9d0-4e1f-2a3b-000000000003",
+      "name": "DLP Sensitive Data Access",
+      "severity": "",
+      "status": "experimental",
+      "tactics": [],
+      "type": "single"
+    },
+    {
+      "author": "",
+      "description": "",
+      "enabled": true,
+      "id": "e5f6a7b8-c9d0-4e1f-2a3b-000000000004",
+      "name": "EDR Outbound Data Transfer",
+      "severity": "",
+      "status": "experimental",
+      "tactics": [],
+      "type": "component"
+    },
+    {
+      "author": "",
+      "description": "",
+      "enabled": true,
+      "id": "e5f6a7b8-c9d0-4e1f-2a3b-000000000005",
+      "name": "Full Chain Attack Lifecycle Correlation",
+      "severity": "critical",
+      "status": "experimental",
+      "tactics": [],
+      "type": "correlation"
+    },
+    {
+      "author": "AkesoSIEM",
+      "description": "Four-stage cross-product temporal correlation spanning all major product types:\n1. NDR detects SMB file transfer to a target host\n2. AV detects the transferred file as malicious on the same host\n3. EDR detects the process that dropped/executed the malicious file on the same host\n4. Windows Event Log shows the user account that launched the process on the same host\n\nAll four stages must occur in order within 45 minutes, correlated by host.name.\nThis represents a complete lateral tool transfer scenario where an attacker moves\nmalware via SMB, it gets flagged by AV, EDR captures the execution chain, and\nWindows auditing identifies the responsible user — four independent products\nconverging on one incident.\n",
+      "enabled": true,
+      "id": "f6a7b8c9-d0e1-4f2a-3b4c-5d6e7f8a9b01",
+      "name": "Four-Source Attack Chain - SMB Transfer to Malware to Process Drop to User Login",
+      "severity": "critical",
+      "status": "experimental",
+      "tactic": "execution",
+      "tactics": [
+        "lateral_movement",
+        "execution"
+      ],
+      "techniqueId": "t1059",
+      "type": "single"
+    },
+    {
+      "author": "",
+      "description": "",
+      "enabled": true,
+      "id": "f6a7b8c9-d0e1-4f2a-3b4c-b00000000001",
+      "name": "NDR SMB File Transfer to Host",
+      "severity": "",
+      "status": "experimental",
+      "tactics": [],
+      "type": "single"
+    },
+    {
+      "author": "",
+      "description": "",
+      "enabled": true,
+      "id": "f6a7b8c9-d0e1-4f2a-3b4c-b00000000002",
+      "name": "AV Malicious File Detection on Host",
+      "severity": "",
+      "status": "experimental",
+      "tactics": [],
+      "type": "single"
+    },
+    {
+      "author": "",
+      "description": "",
+      "enabled": true,
+      "id": "f6a7b8c9-d0e1-4f2a-3b4c-b00000000003",
+      "name": "EDR Dropped File Execution",
+      "severity": "",
+      "status": "experimental",
+      "tactics": [],
+      "type": "single"
+    },
+    {
+      "author": "",
+      "description": "",
+      "enabled": true,
+      "id": "f6a7b8c9-d0e1-4f2a-3b4c-b00000000004",
+      "name": "Windows User Process Launch Audit",
+      "severity": "",
+      "status": "experimental",
+      "tactics": [],
+      "type": "single"
+    },
+    {
+      "author": "",
+      "description": "",
+      "enabled": true,
+      "id": "f6a7b8c9-d0e1-4f2a-3b4c-b00000000005",
+      "name": "Four-Source Attack Chain Correlation",
+      "severity": "critical",
+      "status": "experimental",
+      "tactics": [],
+      "type": "correlation"
+    },
+    {
+      "author": "AkesoSIEM",
+      "description": "NDR detects C2 beaconing to an external IP followed by EDR process creation\nevents on the beaconing host within 5 minutes. Correlated by host.name to\nidentify the responsible process for the beacon traffic.\n",
+      "enabled": true,
+      "id": "c1a2b3c4-d5e6-4f78-9a0b-2c3d4e5f6a02",
+      "name": "NDR + EDR - Network Beacon Followed by Process Identification",
+      "severity": "high",
+      "status": "experimental",
+      "tactic": "execution",
+      "tactics": [
+        "command_and_control",
+        "execution"
+      ],
+      "techniqueId": "t1059",
+      "type": "single"
+    },
+    {
+      "author": "",
+      "description": "",
+      "enabled": true,
+      "id": "c1a2b3c4-d5e6-4f78-9a0b-200000000001",
+      "name": "NDR C2 Beacon Detection",
+      "severity": "",
+      "status": "experimental",
+      "tactics": [],
+      "type": "single"
+    },
+    {
+      "author": "",
+      "description": "",
+      "enabled": true,
+      "id": "c1a2b3c4-d5e6-4f78-9a0b-200000000002",
+      "name": "EDR Suspicious Process on Beacon Host",
+      "severity": "",
+      "status": "experimental",
+      "tactics": [],
+      "type": "single"
+    },
+    {
+      "author": "",
+      "description": "",
+      "enabled": true,
+      "id": "c1a2b3c4-d5e6-4f78-9a0b-200000000003",
+      "name": "NDR Beacon to EDR Process Identification Correlation",
+      "severity": "high",
+      "status": "experimental",
+      "tactics": [],
+      "type": "correlation"
+    },
+    {
+      "author": "AkesoSIEM",
+      "description": "EDR detects LSASS access on Host A followed by NDR detecting SMB lateral\nmovement from Host A to Host B within 30 minutes. Correlated by source.ip.\nIndicates credential theft leading to lateral movement via SMB.\n",
+      "enabled": true,
+      "id": "c1a2b3c4-d5e6-4f78-9a0b-1c2d3e4f5a01",
+      "name": "EDR + NDR - Credential Theft Followed by Lateral Movement",
+      "severity": "critical",
+      "status": "experimental",
+      "tactic": "lateral_movement",
+      "tactics": [
+        "credential_access",
+        "lateral_movement"
+      ],
+      "techniqueId": "t1021.002",
+      "type": "single"
+    },
+    {
+      "author": "",
+      "description": "",
+      "enabled": true,
+      "id": "c1a2b3c4-d5e6-4f78-9a0b-000000000001",
+      "name": "EDR LSASS Credential Access",
+      "severity": "",
+      "status": "experimental",
+      "tactics": [],
+      "type": "single"
+    },
+    {
+      "author": "",
+      "description": "",
+      "enabled": true,
+      "id": "c1a2b3c4-d5e6-4f78-9a0b-000000000002",
+      "name": "NDR SMB Lateral Movement",
+      "severity": "",
+      "status": "experimental",
+      "tactics": [],
+      "type": "single"
+    },
+    {
+      "author": "",
+      "description": "",
+      "enabled": true,
+      "id": "c1a2b3c4-d5e6-4f78-9a0b-000000000003",
+      "name": "EDR Credential Theft to NDR Lateral Movement Correlation",
+      "severity": "critical",
+      "status": "experimental",
+      "tactics": [],
+      "type": "correlation"
+    },
+    {
+      "author": "AkesoSIEM",
+      "description": "DLP classifies files on Host A as confidential followed by NDR detecting\nhigh-volume outbound transfer from Host A within 60 minutes. Correlated\nby host.ip and user.name. Confirms data exfiltration by linking DLP\ncontent classification with NDR network behavior evidence.\n",
+      "enabled": true,
+      "id": "c1a2b3c4-d5e6-4f78-9a0b-4c5d6e7f8a04",
+      "name": "NDR + DLP - Network Exfiltration with DLP Confirmation",
+      "severity": "critical",
+      "status": "experimental",
+      "tactic": "exfiltration",
+      "tactics": [
+        "exfiltration"
+      ],
+      "techniqueId": "t1041",
+      "type": "single"
+    },
+    {
+      "author": "",
+      "description": "",
+      "enabled": true,
+      "id": "c1a2b3c4-d5e6-4f78-9a0b-400000000001",
+      "name": "DLP Confidential Data Activity",
+      "severity": "",
+      "status": "experimental",
+      "tactics": [],
+      "type": "single"
+    },
+    {
+      "author": "",
+      "description": "",
+      "enabled": true,
+      "id": "c1a2b3c4-d5e6-4f78-9a0b-400000000002",
+      "name": "NDR High Volume Outbound Transfer",
+      "severity": "",
+      "status": "experimental",
+      "tactics": [],
+      "type": "single"
+    },
+    {
+      "author": "",
+      "description": "",
+      "enabled": true,
+      "id": "c1a2b3c4-d5e6-4f78-9a0b-400000000003",
+      "name": "DLP Classification to NDR Exfiltration Correlation",
+      "severity": "critical",
+      "status": "experimental",
+      "tactics": [],
+      "type": "correlation"
+    },
+    {
+      "author": "AkesoSIEM",
+      "description": "Full kill-chain correlation across NDR and EDR: (1) NDR detects port scan\nreconnaissance, (2) EDR detects credential dumping on compromised host,\n(3) NDR detects SMB lateral movement, (4) NDR detects high-volume outbound\ndata exfiltration. Correlated by user.name within 2 hours. Links network\nrecon, credential theft, lateral movement, and data theft into a single\nhigh-confidence incident.\n",
+      "enabled": true,
+      "id": "c1a2b3c4-d5e6-4f78-9a0b-5c5d6e7f8a05",
+      "name": "NDR + EDR Full Attack Chain - Recon to Exfiltration",
+      "severity": "critical",
+      "status": "experimental",
+      "tactic": "exfiltration",
+      "tactics": [
+        "reconnaissance",
+        "credential_access",
+        "lateral_movement",
+        "exfiltration"
+      ],
+      "techniqueId": "t1048",
+      "type": "single"
+    },
+    {
+      "author": "",
+      "description": "",
+      "enabled": true,
+      "id": "c1a2b3c4-d5e6-4f78-9a0b-500000000001",
+      "name": "NDR Port Scan Reconnaissance",
+      "severity": "",
+      "status": "experimental",
+      "tactics": [],
+      "type": "single"
+    },
+    {
+      "author": "",
+      "description": "",
+      "enabled": true,
+      "id": "c1a2b3c4-d5e6-4f78-9a0b-500000000002",
+      "name": "EDR Credential Dumping Activity",
+      "severity": "",
+      "status": "experimental",
+      "tactics": [],
+      "type": "single"
+    },
+    {
+      "author": "",
+      "description": "",
+      "enabled": true,
+      "id": "c1a2b3c4-d5e6-4f78-9a0b-500000000003",
+      "name": "NDR SMB Lateral Movement",
+      "severity": "",
+      "status": "experimental",
+      "tactics": [],
+      "type": "single"
+    },
+    {
+      "author": "",
+      "description": "",
+      "enabled": true,
+      "id": "c1a2b3c4-d5e6-4f78-9a0b-500000000004",
+      "name": "NDR Data Exfiltration Outbound",
+      "severity": "",
+      "status": "experimental",
+      "tactics": [],
+      "type": "single"
+    },
+    {
+      "author": "",
+      "description": "",
+      "enabled": true,
+      "id": "c1a2b3c4-d5e6-4f78-9a0b-500000000005",
+      "name": "Full Attack Chain Correlation - Recon to Exfil",
+      "severity": "critical",
+      "status": "experimental",
+      "tactics": [],
+      "type": "correlation"
+    },
+    {
+      "author": "AkesoSIEM",
+      "description": "NDR detects an SMB file transfer to a new internal host followed by AV\ndetecting the transferred file as malicious on the destination host\nwithin 10 minutes. Correlated by destination.ip. Indicates lateral tool\ntransfer where an attacker moves malware between hosts via SMB.\n",
+      "enabled": true,
+      "id": "c1a2b3c4-d5e6-4f78-9a0b-3c4d5e6f7a03",
+      "name": "NDR + AV - Lateral Tool Transfer Followed by Malware Detection",
+      "severity": "critical",
+      "status": "experimental",
+      "tactic": "lateral_movement",
+      "tactics": [
+        "lateral_movement"
+      ],
+      "techniqueId": "t1570",
+      "type": "single"
+    },
+    {
+      "author": "",
+      "description": "",
+      "enabled": true,
+      "id": "c1a2b3c4-d5e6-4f78-9a0b-300000000001",
+      "name": "NDR SMB File Transfer",
+      "severity": "",
+      "status": "experimental",
+      "tactics": [],
+      "type": "single"
+    },
+    {
+      "author": "",
+      "description": "",
+      "enabled": true,
+      "id": "c1a2b3c4-d5e6-4f78-9a0b-300000000002",
+      "name": "AV Malware Detection on Destination",
+      "severity": "",
+      "status": "experimental",
+      "tactics": [],
+      "type": "single"
+    },
+    {
+      "author": "",
+      "description": "",
+      "enabled": true,
+      "id": "c1a2b3c4-d5e6-4f78-9a0b-300000000003",
+      "name": "NDR SMB Transfer to AV Malware Detection Correlation",
+      "severity": "critical",
+      "status": "experimental",
+      "tactics": [],
+      "type": "correlation"
+    },
+    {
+      "author": "AkesoSIEM",
+      "description": "Alerts on any file flagged as malicious or suspicious by AkesoAV,\nregardless of the specific signature or malware family. This is a\ncatch-all rule to ensure no AV detection goes unnoticed in the SIEM.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-2026-4a1b-9c16-000000000030",
+      "name": "Any Malware Detected by Antivirus",
+      "severity": "high",
+      "status": "stable",
+      "tactic": "execution",
+      "tactics": [
+        "execution"
+      ],
+      "techniqueId": "t1204",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM",
+      "description": "Alerts when AkesoAV quarantines or blocks a file in real-time,\nindicating active threat prevention on the endpoint.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-2026-4a1b-9c16-000000000031",
+      "name": "File Quarantined or Blocked by Antivirus",
+      "severity": "high",
+      "status": "stable",
+      "tactic": "execution",
+      "tactics": [
+        "execution"
+      ],
+      "techniqueId": "t1204.002",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects Cobalt Strike beacon or Meterpreter payloads identified by\nantivirus, indicating active adversary C2 infrastructure.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-2004-4a1b-9c19-000000000019",
+      "name": "Cobalt Strike Beacon Detected",
+      "severity": "critical",
+      "status": "stable",
+      "tactic": "command_and_control",
+      "tactics": [
+        "command_and_control"
+      ],
+      "techniqueId": "t1071.001",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects ransomware variants identified by antivirus, requiring\nimmediate incident response action.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-2002-4a1b-9c17-000000000017",
+      "name": "Ransomware Detected by Antivirus",
+      "severity": "critical",
+      "status": "stable",
+      "tactic": "impact",
+      "tactics": [
+        "impact"
+      ],
+      "techniqueId": "t1486",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects trojan malware identified by AkesoSIEM antivirus engine,\nindicating active compromise on the endpoint.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-2001-4a1b-9c16-000000000016",
+      "name": "Trojan Detected by Antivirus",
+      "severity": "critical",
+      "status": "stable",
+      "tactic": "execution",
+      "tactics": [
+        "execution"
+      ],
+      "techniqueId": "t1204",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects webshell implants identified by antivirus, indicating a\ncompromised web server requiring immediate remediation.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-2003-4a1b-9c18-000000000018",
+      "name": "Webshell Detected by Antivirus",
+      "severity": "critical",
+      "status": "stable",
+      "tactic": "persistence",
+      "tactics": [
+        "persistence"
+      ],
+      "techniqueId": "t1505.003",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects potentially unwanted applications or hacking tools identified\nby antivirus, which may indicate unauthorized security tool usage.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-2005-4a1b-9c20-000000000020",
+      "name": "PUA or Hacktool Detected by Antivirus",
+      "severity": "high",
+      "status": "stable",
+      "tactic": "resource_development",
+      "tactics": [
+        "resource_development"
+      ],
+      "techniqueId": "t1588.002",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects authentication failures across all log sources, providing\nvisibility into failed access attempts organization-wide.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-7002-4a1b-9c49-000000000049",
+      "name": "Authentication Failure from Any Source",
+      "severity": "medium",
+      "status": "stable",
+      "tactic": "credential_access",
+      "tactics": [
+        "credential_access"
+      ],
+      "techniqueId": "t1110",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects malware alerts from any log source, providing a catch-all\ndetection for malicious software across the environment.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-7001-4a1b-9c48-000000000048",
+      "name": "Malware Detected on Any Source",
+      "severity": "high",
+      "status": "stable",
+      "tactic": "execution",
+      "tactics": [
+        "execution"
+      ],
+      "techniqueId": "t1204",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects financial data being shared in violation of DLP policies,\npotentially exposing sensitive fiscal information.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-3005-4a1b-9c25-000000000025",
+      "name": "Financial Data Leak Detected",
+      "severity": "high",
+      "status": "stable",
+      "tactic": "exfiltration",
+      "tactics": [
+        "exfiltration"
+      ],
+      "techniqueId": "t1041",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects PCI cardholder data being exfiltrated via upload or email\nchannels, violating data protection policies.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-3001-4a1b-9c21-000000000021",
+      "name": "PCI Data Exfiltration Detected",
+      "severity": "critical",
+      "status": "stable",
+      "tactic": "exfiltration",
+      "tactics": [
+        "exfiltration"
+      ],
+      "techniqueId": "t1041",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects personally identifiable information being handled in violation\nof data loss prevention policies.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-3002-4a1b-9c22-000000000022",
+      "name": "PII Policy Violation Detected",
+      "severity": "high",
+      "status": "stable",
+      "tactic": "collection",
+      "tactics": [
+        "collection"
+      ],
+      "techniqueId": "t1530",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects intellectual property or source code being uploaded to external\nservices in violation of IP protection policies.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-3003-4a1b-9c23-000000000023",
+      "name": "Source Code Exfiltration via Upload",
+      "severity": "critical",
+      "status": "stable",
+      "tactic": "exfiltration",
+      "tactics": [
+        "exfiltration"
+      ],
+      "techniqueId": "t1048",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects restricted-classified data being copied to USB removable media,\nindicating potential data theft or policy violation.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-3004-4a1b-9c24-000000000024",
+      "name": "Restricted Data Copied to USB Device",
+      "severity": "critical",
+      "status": "stable",
+      "tactic": "exfiltration",
+      "tactics": [
+        "exfiltration"
+      ],
+      "techniqueId": "t1052.001",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects crontab being edited or removed, which may indicate\npersistence establishment or anti-forensics activity.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-6003-4a1b-9c46-000000000046",
+      "name": "Crontab Modification Detected",
+      "severity": "medium",
+      "status": "stable",
+      "tactic": "persistence",
+      "tactics": [
+        "persistence"
+      ],
+      "techniqueId": "t1053.003",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects failed SSH authentication attempts that may indicate\na brute force attack against Linux systems.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-6001-4a1b-9c44-000000000044",
+      "name": "SSH Brute Force Attempt",
+      "severity": "high",
+      "status": "stable",
+      "tactic": "credential_access",
+      "tactics": [
+        "credential_access"
+      ],
+      "techniqueId": "t1110",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects usage of sudo or su commands for privilege escalation\non Linux systems.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-6002-4a1b-9c45-000000000045",
+      "name": "Sudo Privilege Escalation",
+      "severity": "low",
+      "status": "stable",
+      "tactic": "privilege_escalation",
+      "tactics": [
+        "privilege_escalation"
+      ],
+      "techniqueId": "t1548.003",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects direct root login sessions on Linux systems, which violates\nsecurity best practices and may indicate unauthorized access.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-6004-4a1b-9c47-000000000047",
+      "name": "Direct Root Login Detected",
+      "severity": "high",
+      "status": "stable",
+      "tactic": "persistence",
+      "tactics": [
+        "persistence"
+      ],
+      "techniqueId": "t1078.003",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects network connections to ports commonly associated with the\nTor anonymity network, which may indicate evasion or data exfiltration.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-4003-4a1b-9c28-000000000028",
+      "name": "Connection to Known Tor Network Ports",
+      "severity": "high",
+      "status": "stable",
+      "tactic": "command_and_control",
+      "tactics": [
+        "command_and_control"
+      ],
+      "techniqueId": "t1090.003",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects DNS queries to suspicious or frequently abused top-level domains\ncommonly used for phishing and malware distribution.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-4007-4a1b-9c32-000000000032",
+      "name": "DNS Query for Suspicious Top-Level Domain",
+      "severity": "medium",
+      "status": "stable",
+      "tactic": "command_and_control",
+      "tactics": [
+        "command_and_control"
+      ],
+      "techniqueId": "t1071.004",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects DNS queries with unusually long subdomains that may indicate\nDNS tunneling for data exfiltration or C2 communication.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-4006-4a1b-9c31-000000000031",
+      "name": "DNS Tunneling - Long Subdomain Query",
+      "severity": "high",
+      "status": "stable",
+      "tactic": "command_and_control",
+      "tactics": [
+        "command_and_control"
+      ],
+      "techniqueId": "t1071.004",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects sessions with a high number of packets sent, which may indicate\nbeacon-like C2 communication patterns.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-4008-4a1b-9c33-000000000033",
+      "name": "High Packet Count Session - Beacon-Like Activity",
+      "severity": "medium",
+      "status": "stable",
+      "tactic": "command_and_control",
+      "tactics": [
+        "command_and_control"
+      ],
+      "techniqueId": "t1071",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects large outbound data transfers that may indicate data\nexfiltration or unauthorized bulk data movement.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-4002-4a1b-9c27-000000000027",
+      "name": "Large Outbound Data Transfer",
+      "severity": "medium",
+      "status": "stable",
+      "tactic": "exfiltration",
+      "tactics": [
+        "exfiltration"
+      ],
+      "techniqueId": "t1048",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects unusually long network sessions that may indicate command and\ncontrol beaconing or persistent backdoor connections.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-4001-4a1b-9c26-000000000026",
+      "name": "Long Duration Network Session - C2 Beaconing Indicator",
+      "severity": "medium",
+      "status": "stable",
+      "tactic": "command_and_control",
+      "tactics": [
+        "command_and_control"
+      ],
+      "techniqueId": "t1071",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects SMB connections on port 445 that may indicate lateral movement\nbetween hosts within the network.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-4004-4a1b-9c29-000000000029",
+      "name": "SMB Lateral Movement Detected",
+      "severity": "medium",
+      "status": "stable",
+      "tactic": "lateral_movement",
+      "tactics": [
+        "lateral_movement"
+      ],
+      "techniqueId": "t1021.002",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects outbound connections to ports commonly associated with\nreverse shells, backdoors, and hacking tools.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-4005-4a1b-9c30-000000000030",
+      "name": "Connection to Suspicious Port",
+      "severity": "high",
+      "status": "stable",
+      "tactic": "command_and_control",
+      "tactics": [
+        "command_and_control"
+      ],
+      "techniqueId": "t1571",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects BITSAdmin being used to download files, a living-off-the-land\ntechnique for staging payloads.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-1010-4a1b-9c10-000000000010",
+      "name": "BITSAdmin Download Activity",
+      "severity": "high",
+      "status": "stable",
+      "tactic": "persistence",
+      "tactics": [
+        "defense_evasion",
+        "persistence"
+      ],
+      "techniqueId": "t1197",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects certutil.exe being used as a download cradle to fetch remote\npayloads, a well-known living-off-the-land technique.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-1003-4a1b-9c03-000000000003",
+      "name": "Certutil Download Cradle",
+      "severity": "high",
+      "status": "stable",
+      "tactic": "command_and_control",
+      "tactics": [
+        "command_and_control"
+      ],
+      "techniqueId": "t1105",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects cmd.exe being spawned by Microsoft Office applications, a strong\nindicator of macro-based malware execution.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-1012-4a1b-9c12-000000000012",
+      "name": "Command Prompt Spawned by Office Application",
+      "severity": "high",
+      "status": "stable",
+      "tactic": "execution",
+      "tactics": [
+        "execution"
+      ],
+      "techniqueId": "t1204.002",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects suspicious access to the LSASS process, which may indicate\ncredential dumping attempts.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-1011-4a1b-9c11-000000000011",
+      "name": "Suspicious LSASS Process Access",
+      "severity": "critical",
+      "status": "stable",
+      "tactic": "credential_access",
+      "tactics": [
+        "credential_access"
+      ],
+      "techniqueId": "t1003.001",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM",
+      "description": "Detects execution of mimikatz.exe, a well-known credential dumping tool\ncommonly used by attackers for lateral movement and privilege escalation.\n",
+      "enabled": true,
+      "id": "f018b1a0-1e02-4c2e-8a3d-6c7b8a9f0e1d",
+      "name": "Mimikatz Credential Dumping Tool Execution",
+      "severity": "critical",
+      "status": "stable",
+      "tactic": "credential_access",
+      "tactics": [
+        "credential_access"
+      ],
+      "techniqueId": "t1003.001",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects mshta.exe executing JavaScript, VBScript, or fetching remote\ncontent, commonly used to bypass application whitelisting.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-1006-4a1b-9c06-000000000006",
+      "name": "Mshta Script Execution",
+      "severity": "high",
+      "status": "stable",
+      "tactic": "defense_evasion",
+      "tactics": [
+        "defense_evasion"
+      ],
+      "techniqueId": "t1218.005",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects net.exe or net1.exe being used to enumerate users and groups,\na common reconnaissance technique during post-exploitation.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-1008-4a1b-9c08-000000000008",
+      "name": "Net.exe User and Group Enumeration",
+      "severity": "medium",
+      "status": "stable",
+      "tactic": "discovery",
+      "tactics": [
+        "discovery"
+      ],
+      "techniqueId": "t1087.001",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects PowerShell commands that download content from the internet,\ncommonly used in initial access and payload staging.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-1014-4a1b-9c14-000000000014",
+      "name": "PowerShell Download Cradle",
+      "severity": "high",
+      "status": "stable",
+      "tactic": "command_and_control",
+      "tactics": [
+        "execution",
+        "command_and_control"
+      ],
+      "techniqueId": "t1059.001",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects PowerShell execution with encoded commands, a common technique\nused to obfuscate malicious scripts and evade detection.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-1002-4a1b-9c02-000000000002",
+      "name": "PowerShell Encoded Command Execution",
+      "severity": "high",
+      "status": "stable",
+      "tactic": "execution",
+      "tactics": [
+        "execution"
+      ],
+      "techniqueId": "t1059.001",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects PsExec usage for remote command execution, commonly used\nfor lateral movement within compromised networks.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-1001-4a1b-9c01-000000000001",
+      "name": "PsExec Remote Execution",
+      "severity": "high",
+      "status": "stable",
+      "tactic": "lateral_movement",
+      "tactics": [
+        "lateral_movement"
+      ],
+      "techniqueId": "t1021.002",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects reg.exe being used to save SAM or SECURITY registry hives,\na technique for offline credential extraction.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-1009-4a1b-9c09-000000000009",
+      "name": "Registry SAM/SECURITY Hive Dump",
+      "severity": "critical",
+      "status": "stable",
+      "tactic": "credential_access",
+      "tactics": [
+        "credential_access"
+      ],
+      "techniqueId": "t1003.002",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects regsvr32.exe loading scrobj.dll or fetching remote scriptlets,\nknown as the Squiblydoo attack for application whitelisting bypass.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-1015-4a1b-9c15-000000000015",
+      "name": "Regsvr32 Squiblydoo Attack",
+      "severity": "high",
+      "status": "stable",
+      "tactic": "defense_evasion",
+      "tactics": [
+        "defense_evasion"
+      ],
+      "techniqueId": "t1218.010",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects rundll32.exe loading DLLs from user temp or AppData directories,\na common indicator of malware execution via DLL side-loading.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-1005-4a1b-9c05-000000000005",
+      "name": "Rundll32 Executing From User Temp Directory",
+      "severity": "high",
+      "status": "stable",
+      "tactic": "defense_evasion",
+      "tactics": [
+        "defense_evasion"
+      ],
+      "techniqueId": "t1218.011",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects creation of scheduled tasks using schtasks.exe, commonly used\nfor persistence and privilege escalation.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-1013-4a1b-9c13-000000000013",
+      "name": "Scheduled Task Creation via Schtasks",
+      "severity": "medium",
+      "status": "stable",
+      "tactic": "persistence",
+      "tactics": [
+        "persistence"
+      ],
+      "techniqueId": "t1053.005",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects execution of whoami.exe, often used by attackers for initial\nreconnaissance after gaining access to a system.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-1007-4a1b-9c07-000000000007",
+      "name": "Whoami Reconnaissance Command",
+      "severity": "medium",
+      "status": "stable",
+      "tactic": "discovery",
+      "tactics": [
+        "discovery"
+      ],
+      "techniqueId": "t1033",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects WMIC being used to create processes, often leveraged for\nlateral movement and remote code execution.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-1004-4a1b-9c04-000000000004",
+      "name": "WMIC Remote Process Creation",
+      "severity": "high",
+      "status": "stable",
+      "tactic": "execution",
+      "tactics": [
+        "execution"
+      ],
+      "techniqueId": "t1047",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects creation of new user accounts which may indicate an attacker\nestablishing persistence via backdoor accounts.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-5002-4a1b-9c35-000000000035",
+      "name": "New User Account Created",
+      "severity": "medium",
+      "status": "stable",
+      "tactic": "persistence",
+      "tactics": [
+        "persistence"
+      ],
+      "techniqueId": "t1136.001",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects multiple failed logon attempts that may indicate a brute force\nattack against user accounts.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-5001-4a1b-9c34-000000000034",
+      "name": "Brute Force Logon Failures",
+      "severity": "high",
+      "status": "stable",
+      "tactic": "credential_access",
+      "tactics": [
+        "credential_access"
+      ],
+      "techniqueId": "t1110",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects Kerberos TGS ticket requests that may indicate Kerberoasting\nattacks targeting service account credentials.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-5007-4a1b-9c40-000000000040",
+      "name": "Kerberoasting - TGS Request with RC4 Encryption",
+      "severity": "high",
+      "status": "stable",
+      "tactic": "credential_access",
+      "tactics": [
+        "credential_access"
+      ],
+      "techniqueId": "t1558.003",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects clearing of security event logs, a common anti-forensics\ntechnique used to cover tracks after compromise.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-5004-4a1b-9c37-000000000037",
+      "name": "Security Log Cleared",
+      "severity": "critical",
+      "status": "stable",
+      "tactic": "defense_evasion",
+      "tactics": [
+        "defense_evasion"
+      ],
+      "techniqueId": "t1070.001",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects special privileges being assigned during logon, which may\nindicate privilege escalation attempts.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-5003-4a1b-9c36-000000000036",
+      "name": "Special Privileges Assigned to Logon",
+      "severity": "medium",
+      "status": "stable",
+      "tactic": "privilege_escalation",
+      "tactics": [
+        "privilege_escalation"
+      ],
+      "techniqueId": "t1078",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects remote desktop logon sessions, which may indicate lateral\nmovement or unauthorized remote access.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-5006-4a1b-9c39-000000000039",
+      "name": "RDP Remote Logon Detected",
+      "severity": "medium",
+      "status": "stable",
+      "tactic": "lateral_movement",
+      "tactics": [
+        "lateral_movement"
+      ],
+      "techniqueId": "t1021.001",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects installation of new Windows services, which may indicate\npersistence mechanisms or malicious service creation.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-5005-4a1b-9c38-000000000038",
+      "name": "New Service Installed",
+      "severity": "medium",
+      "status": "stable",
+      "tactic": "persistence",
+      "tactics": [
+        "persistence"
+      ],
+      "techniqueId": "t1543.003",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects files being created in the Windows Startup folder, a common\npersistence mechanism for malware.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-5010-4a1b-9c43-000000000043",
+      "name": "Sysmon File Created in Startup Folder",
+      "severity": "high",
+      "status": "stable",
+      "tactic": "persistence",
+      "tactics": [
+        "persistence"
+      ],
+      "techniqueId": "t1547.001",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects outbound network connections to ports commonly used by\nreverse shells and backdoor tools.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-5009-4a1b-9c42-000000000042",
+      "name": "Sysmon Outbound Connection to Unusual Port",
+      "severity": "high",
+      "status": "stable",
+      "tactic": "command_and_control",
+      "tactics": [
+        "command_and_control"
+      ],
+      "techniqueId": "t1571",
+      "type": "single"
+    },
+    {
+      "author": "AkesoSIEM (SigmaHQ)",
+      "description": "Detects process creation events where the parent process is a known\nexecution proxy such as WMI or PowerShell remoting hosts.\n",
+      "enabled": true,
+      "id": "a1b2c3d4-5008-4a1b-9c41-000000000041",
+      "name": "Sysmon Process Creation with Suspicious Parent",
+      "severity": "high",
+      "status": "stable",
+      "tactic": "execution",
+      "tactics": [
+        "execution"
+      ],
+      "techniqueId": "t1047",
+      "type": "single"
+    }
+  ],
+  "total": 107
+}

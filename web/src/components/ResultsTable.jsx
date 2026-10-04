@@ -8,26 +8,29 @@ import {
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react'
 import { ChevronRightIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
 
+import { sourceOf, fieldValue, valueText, isFilterValue, rawPayload } from '../lib/hunt'
+
 const displayColumns = [
-  { field: '@timestamp', label: 'Timestamp', size: 110 },
-  { field: 'event.action', label: 'Action', size: 130 },
-  { field: 'source.ip', label: 'Src IP', size: 115 },
-  { field: 'destination.ip', label: 'Dst IP', size: 115 },
-  { field: 'user.name', label: 'User', size: 90 },
-  { field: 'host.name', label: 'Host', size: 100 },
-  { field: 'process.name', label: 'Process', size: 110 },
-  { field: 'message', label: 'Message', size: 280 },
+  { field: '@timestamp', label: 'Original timestamp', size: 216 },
+  { field: 'event.action', label: 'Action', size: 152 },
+  { field: 'source.ip', label: 'Src IP', size: 112 },
+  { field: 'destination.ip', label: 'Dst IP', size: 112 },
+  { field: 'user.name', label: 'User', size: 104 },
+  { field: 'host.name', label: 'Host', size: 144 },
+  { field: 'process.name', label: 'Process', size: 128 },
+  { field: 'message', label: 'Message', size: 224 },
 ]
 
 function ExpandedRow({ row }) {
   return (
-    <TabGroup>
+    <TabGroup className="w-[100cqw] max-w-full min-w-0">
+      <p className="px-3 py-2 text-xs leading-5 font-mono text-slate-600 dark:text-slate-300 break-all">Index: {row._index || 'Not returned'} · ID: {row._id || 'Not returned'}</p>
       <TabList className="flex border-b border-slate-200 dark:border-slate-700 px-3">
         {['Table', 'JSON', 'Raw'].map((tab) => (
           <Tab
             key={tab}
             className={({ selected }) =>
-              `px-3 py-1.5 text-xs font-medium border-b-2 -mb-px transition-colors outline-none ${
+              `px-3 py-1.5 text-xs font-medium border-b-2 -mb-px transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-indigo-500 ${
                 selected
                   ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
                   : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
@@ -39,17 +42,17 @@ function ExpandedRow({ row }) {
         ))}
       </TabList>
 
-      <TabPanels className="p-3">
+      <TabPanels className="min-w-0 p-3">
         {/* Table view */}
-        <TabPanel>
-          <div className="rounded border border-slate-200 dark:border-slate-700 divide-y divide-slate-200 dark:divide-slate-700">
-            {Object.entries(row).filter(([k]) => !k.startsWith('_')).map(([key, val]) => (
-              <div key={key} className="flex text-xs">
-                <span className="w-44 shrink-0 px-2 py-1.5 font-mono text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 truncate" title={key}>
+        <TabPanel className="min-w-0 max-h-72 overflow-auto focus-visible:outline-2 focus-visible:outline-indigo-500">
+          <div className="min-w-0 rounded border border-slate-200 dark:border-slate-700 divide-y divide-slate-200 dark:divide-slate-700">
+            {Object.entries(sourceOf(row)).map(([key, val]) => (
+              <div key={key} className="grid grid-cols-[minmax(6rem,9rem)_minmax(0,1fr)] text-xs leading-5">
+                <span className="px-2 py-1.5 font-mono text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 [overflow-wrap:anywhere]" title={key}>
                   {key}
                 </span>
-                <span className="flex-1 px-2 py-1.5 font-mono text-slate-800 dark:text-slate-200 truncate" title={String(val)}>
-                  {String(val ?? '')}
+                <span tabIndex={0} aria-label={`${key} value`} className="min-w-0 max-h-32 overflow-auto px-2 py-1.5 font-mono text-slate-800 dark:text-slate-200 whitespace-pre-wrap [overflow-wrap:anywhere] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-indigo-500" title={valueText(val)}>
+                  {valueText(val)}
                 </span>
               </div>
             ))}
@@ -57,16 +60,16 @@ function ExpandedRow({ row }) {
         </TabPanel>
 
         {/* JSON view */}
-        <TabPanel>
-          <pre className="text-xs font-mono text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-900 rounded p-3 overflow-auto max-h-64 whitespace-pre-wrap">
+        <TabPanel className="min-w-0 focus-visible:outline-2 focus-visible:outline-indigo-500">
+          <pre tabIndex={0} className="min-w-0 text-xs leading-5 font-mono text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-900 rounded p-3 overflow-auto max-h-64 whitespace-pre-wrap break-all focus-visible:outline-2 focus-visible:outline-indigo-500">
             {JSON.stringify(row, null, 2)}
           </pre>
         </TabPanel>
 
         {/* Raw view */}
-        <TabPanel>
-          <pre className="text-xs font-mono text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-900 rounded p-3 overflow-auto max-h-64 whitespace-pre-wrap break-all">
-            {Object.entries(row).filter(([k]) => !k.startsWith('_')).map(([k, v]) => `${k}=${JSON.stringify(v)}`).join(' ')}
+        <TabPanel className="min-w-0 focus-visible:outline-2 focus-visible:outline-indigo-500">
+          <pre tabIndex={0} className="min-w-0 text-xs leading-5 font-mono text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-900 rounded p-3 overflow-auto max-h-64 whitespace-pre-wrap break-all focus-visible:outline-2 focus-visible:outline-indigo-500">
+            {rawPayload(row) == null ? 'Original raw payload was not returned.' : valueText(rawPayload(row))}
           </pre>
         </TabPanel>
       </TabPanels>
@@ -74,7 +77,7 @@ function ExpandedRow({ row }) {
   )
 }
 
-export default function ResultsTable({ data, pageSize, onPageSizeChange, onContextMenu }) {
+export default function ResultsTable({ data, pageSize, onPageSizeChange, onContextMenu, emptyMessage }) {
   const [sorting, setSorting] = useState([])
   const [expandedRows, setExpandedRows] = useState({})
 
@@ -88,37 +91,37 @@ export default function ResultsTable({ data, pageSize, onPageSizeChange, onConte
       header: '',
       cell: ({ row }) => (
         <button
-          onClick={(e) => { e.stopPropagation(); toggleExpanded(row.original._id) }}
-          className="p-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+          onClick={(e) => { e.stopPropagation(); toggleExpanded(row.id) }}
+          aria-label={expandedRows[row.id] ? 'Collapse event' : 'Expand event'}
+          aria-expanded={!!expandedRows[row.id]}
+          className="flex h-5 w-5 items-center justify-center rounded text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 focus-visible:outline-2 focus-visible:outline-indigo-500"
         >
-          {expandedRows[row.original._id]
+          {expandedRows[row.id]
             ? <ChevronDownIcon className="h-3.5 w-3.5" />
             : <ChevronRightIcon className="h-3.5 w-3.5" />
           }
         </button>
       ),
-      size: 30,
+      size: 32,
       enableSorting: false,
     },
     ...displayColumns.map(({ field, label, size }) => ({
       id: field,
       header: label,
-      accessorFn: (row) => row[field],
+      accessorFn: (row) => fieldValue(row, field),
       cell: ({ getValue, row, column }) => {
         const val = getValue()
         return (
           <span
             className="text-xs font-mono text-slate-700 dark:text-slate-300 truncate block cursor-default"
-            title={String(val ?? '')}
+            title={valueText(val)}
             onContextMenu={(e) => {
               e.preventDefault()
+              if (!isFilterValue(val)) return
               onContextMenu?.({ x: e.clientX, y: e.clientY, field: column.id, value: val, row: row.original })
             }}
           >
-            {field === '@timestamp'
-              ? new Date(val).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 3 })
-              : String(val ?? '—')
-            }
+            {valueText(val)}
           </span>
         )
       },
@@ -133,22 +136,24 @@ export default function ResultsTable({ data, pageSize, onPageSizeChange, onConte
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getRowId: (row) => row._id,
+    // Rendering keys never become evidence identities; missing metadata stays missing.
+    getRowId: (row, index) => row._id != null && row._index != null ? JSON.stringify([row._index, row._id]) : `row-position-${index}`,
   })
 
   return (
-    <div className="rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col h-full">
+    <div className="[container-type:inline-size] rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-hidden flex flex-col h-full">
       {/* Header bar */}
-      <div className="flex items-center justify-between px-3 py-2 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
-        <span className="text-xs text-slate-500 dark:text-slate-400">
-          {data.length.toLocaleString()} events
+      <div className="flex shrink-0 items-center justify-between gap-2 px-3 py-1.5 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
+        <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
+          Results
         </span>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-400">Rows per page:</span>
+          <label htmlFor="hunt-page-size" className="text-xs text-slate-600 dark:text-slate-400">Rows per page:</label>
           <select
+            id="hunt-page-size"
             value={pageSize}
             onChange={(e) => onPageSizeChange(Number(e.target.value))}
-            className="text-xs px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+            className="h-7 text-xs px-2 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 focus-visible:outline-2 focus-visible:outline-indigo-500"
           >
             {[25, 50, 100, 200].map(n => (
               <option key={n} value={n}>{n}</option>
@@ -158,25 +163,28 @@ export default function ResultsTable({ data, pageSize, onPageSizeChange, onConte
       </div>
 
       {/* Scrollable table */}
-      <div className="overflow-auto flex-1 min-h-0">
-        <table className="w-full">
+      <div className="overflow-auto flex-1 min-h-0" data-testid="hunt-table-scroll">
+        <table className="table-fixed w-full" style={{ minWidth: table.getTotalSize() }}>
+          <colgroup>
+            {table.getVisibleLeafColumns().map(column => <col key={column.id} style={{ width: column.getSize() }} />)}
+          </colgroup>
           <thead className="sticky top-0 z-10">
             {table.getHeaderGroups().map(headerGroup => (
               <tr key={headerGroup.id} className="border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
                 {headerGroup.headers.map(header => (
                   <th
                     key={header.id}
-                    onClick={header.column.getCanSort() ? header.column.getToggleSortingHandler() : undefined}
-                    className={`px-2 py-1.5 text-left text-[10px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap ${
-                      header.column.getCanSort() ? 'cursor-pointer select-none hover:text-slate-700 dark:hover:text-slate-200' : ''
-                    }`}
-                    style={{ width: header.getSize() }}
+                    aria-sort={header.column.getIsSorted() === 'asc' ? 'ascending' : header.column.getIsSorted() === 'desc' ? 'descending' : undefined}
+                    className="px-2 py-1.5 text-left text-[10px] font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap"
                   >
-                    <span className="flex items-center gap-0.5">
+                    {header.column.getCanSort() ? <button
+                      onClick={header.column.getToggleSortingHandler()}
+                      className="flex items-center gap-0.5 uppercase tracking-wider rounded hover:text-indigo-600 focus-visible:outline-2 focus-visible:outline-indigo-500"
+                    >
                       {flexRender(header.column.columnDef.header, header.getContext())}
                       {header.column.getIsSorted() === 'asc' && ' ↑'}
                       {header.column.getIsSorted() === 'desc' && ' ↓'}
-                    </span>
+                    </button> : flexRender(header.column.columnDef.header, header.getContext())}
                   </th>
                 ))}
               </tr>
@@ -188,14 +196,16 @@ export default function ResultsTable({ data, pageSize, onPageSizeChange, onConte
               return (
                 <Fragment key={row.id}>
                   <tr
+                    data-evidence-row=""
+                    data-evidence-id={row.original._id}
+                    data-evidence-index={row.original._index}
                     onClick={() => toggleExpanded(row.id)}
                     className="cursor-pointer border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
                   >
                     {row.getVisibleCells().map(cell => (
                       <td
                         key={cell.id}
-                        className="px-2 py-1 whitespace-nowrap"
-                        style={{ width: cell.column.getSize() }}
+                        className="px-2 py-1 overflow-hidden whitespace-nowrap"
                       >
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </td>
@@ -217,7 +227,7 @@ export default function ResultsTable({ data, pageSize, onPageSizeChange, onConte
 
       {data.length === 0 && (
         <div className="px-4 py-12 text-center text-sm text-slate-400">
-          No results. Run a search to see events.
+          {emptyMessage}
         </div>
       )}
     </div>

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -173,7 +174,7 @@ func TestDLQDefaultPrefix(t *testing.T) {
 	defer indexer.mu.Unlock()
 	found := false
 	for idx := range indexer.indexed {
-		if len(idx) > 0 && idx[:8] == "akeso" {
+		if strings.HasPrefix(idx, "akeso-dlq-") {
 			found = true
 		}
 	}

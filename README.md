@@ -11,11 +11,17 @@ Most SIEM platforms are either expensive commercial products with opaque interna
 - **Single-binary simplicity.** Each component is a standalone Go binary — no JVM, no Python runtime, no container orchestration required. Build it, copy it, run it.
 - **Native Sigma support.** Detection rules use [Sigma](https://github.com/SigmaHQ/sigma), the open standard used by thousands of detection engineers worldwide. Ship with 3000+ community rules on day one. No proprietary rule language to learn.
 - **ECS-first normalization.** Every event from every source is normalized to the [Elastic Common Schema](https://www.elastic.co/guide/en/ecs/current/index.html) before it hits storage. Cross-source correlation works because the data model is consistent, not because you wrote custom joins.
-- **Cross-portfolio correlation.** AkesoSIEM natively correlates across EDR, AV, DLP, Windows, and syslog sources. A malware detection on one host plus a DLP policy violation on the same user within 15 minutes? That's one alert, not two tickets in two consoles.
+- **Cross-portfolio correlation.** Correlation evaluators and synthetic replay tests cover multi-stage attack chains across portfolio sources. Connecting those evaluators to the running ingestion pipeline remains unfinished.
 - **Built-in case management.** Alert escalation, observable tracking, analyst collaboration, and resolution metrics without an external tool like TheHive or ServiceNow.
 - **Transparent and hackable.** The entire codebase is readable Go with minimal dependencies. If you want to add a parser, write a struct that implements one interface. If you want to add a detection, write a YAML file.
 
 AkesoSIEM is designed for security teams that want to understand their tooling, not just operate it.
+
+## Validation scope
+
+This is a proof of concept. CI checks the Go code, synthetic replay tests, dashboard build, and a 10-second load smoke test. It does not establish production readiness or reproduce the historical 10-minute performance run.
+
+The ingestion pipeline currently emits **single-event** detections. Correlation evaluators are exercised separately through `NewCorrelationInputEngine`; component matches are internal inputs, not standalone alerts. `cmd/akeso-correlate` is a startup placeholder, so end-to-end correlation deployment remains to be implemented.
 
 ## What It Does
 
@@ -88,7 +94,7 @@ Universal entity search with auto-detection: type an IP, hash, domain, username,
 | `akeso-ingest` | HTTP/syslog/WEF listener, API key auth, NDJSON batch support, TLS syslog |
 | `akeso-normalize` | ECS normalization engine with per-source-type parsers and YAML sub-parsers |
 | `akeso-store` | Elasticsearch client — index templates, ILM, bulk indexing, dead letter queue |
-| `akeso-correlate` | Real-time Sigma rule engine with correlation state management |
+| `akeso-correlate` | Startup placeholder; correlation library and replay tests live in `internal/correlate` |
 | `akeso-query` | REST API server, query language → ES DSL translation, global search, serves dashboard |
 | `akeso-cli` | Management CLI — user/key admin, rules validate/update/reload, ingest test/replay, diagnostics, ad-hoc queries |
 | `akeso-dashboard` | React SPA — alert triage, cases, threat hunting, rule management, source health |
@@ -369,7 +375,7 @@ Each scenario produces events across multiple source types (EDR, AV, DLP, NDR, W
 | P2 | Windows Event Log Ingestion (XML + Winlogbeat JSON) | 4 | P1 | Complete |
 | P3 | Syslog Ingestion (TCP/UDP/TLS, RFC 5424 & 3164) | 4 | P1 | Complete |
 | P4 | Sigma Single-Event Detection Engine | 5 | P1 | Complete |
-| P5 | Sigma Correlation Rules (event_count, value_count, temporal) | 5 | P4 | Complete |
+| P5 | Sigma Correlation Rules (event_count, value_count, temporal) | 5 | P4 | Library tested; runtime wiring pending |
 | P6 | Query Language + REST API | 4 | P0, P1 | Complete |
 | P7 | React Dashboard + Auth + Source Configuration | 15 | P6 | Complete |
 | P8 | CLI Management Tool | 4 | P0–P7 | Complete |
@@ -382,4 +388,4 @@ See `REQUIREMENTS.md` for the full specification and task breakdown.
 
 ## License
 
-Proprietary — Akeso Security Portfolio.
+Proprietary — Akeso Security Portfolio. Public source visibility is not an open-source license. No general permission to redistribute or incorporate this project's original code is granted here; contact the repository owner for permission. Third-party dependencies retain their own licenses.

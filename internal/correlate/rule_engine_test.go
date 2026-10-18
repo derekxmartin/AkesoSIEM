@@ -83,6 +83,33 @@ func parseTestRules(t *testing.T, yamlStr string) *RuleRegistry {
 
 // --- Happy path tests ---
 
+func TestCorrelationInputEngine_ComponentsRequireOptIn(t *testing.T) {
+	registry := parseTestRules(t, `
+title: Credential access component
+id: component-test
+type: component
+logsource:
+  product: akeso_edr
+detection:
+  selection:
+    event.action: lsass_access
+  condition: selection
+level: high
+`)
+	lsMap := testEngineLogsourceMap(t)
+	event := &common.ECSEvent{
+		SourceType: "akeso_edr",
+		Event:      &common.EventFields{Action: "lsass_access"},
+	}
+	if alerts := NewRuleEngine(registry, lsMap).Evaluate(event); len(alerts) != 0 {
+		t.Fatalf("component matches must not become standalone alerts: %v", alerts)
+	}
+	inputs := NewCorrelationInputEngine(registry, lsMap).Evaluate(event)
+	if len(inputs) != 1 || inputs[0].RuleID != "component-test" || inputs[0].Ruleset != "sigma_component" {
+		t.Fatalf("expected labeled component input, got %v", inputs)
+	}
+}
+
 func TestRuleEngine_SingleRuleMatch(t *testing.T) {
 	registry := parseTestRules(t, `
 title: EDR Alert Detection

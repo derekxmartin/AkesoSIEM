@@ -382,4 +382,4 @@ See `REQUIREMENTS.md` for the full specification and task breakdown.
 
 ## License
 
-Proprietary — Akeso Security Portfolio.
+Proprietary — Akeso Security Portfolio. Public source visibility is not an open-source license. No general permission to redistribute or incorporate this project's original code is granted here; contact the repository owner for permission. Third-party dependencies retain their own licenses.

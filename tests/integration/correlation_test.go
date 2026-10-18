@@ -35,7 +35,7 @@ func TestCrossSourceTemporalCorrelation(t *testing.T) {
 
 	// ── Build engines ───────────────────────────────────────────────────
 	registry := correlate.NewRuleRegistry(rules)
-	singleEngine := correlate.NewRuleEngine(registry, lsMap)
+	singleEngine := correlate.NewCorrelationInputEngine(registry, lsMap)
 
 	// Parse correlation rules and build temporal evaluator.
 	corrRules, corrErrs := correlate.ParseCorrelationRules(registry)
@@ -137,7 +137,7 @@ func TestTemporalWindowExpiry(t *testing.T) {
 	lsMap, _ := correlate.LoadLogsourceMap(filepath.Join("..", "..", "parsers", "logsource_map.yaml"))
 
 	registry := correlate.NewRuleRegistry(rules)
-	singleEngine := correlate.NewRuleEngine(registry, lsMap)
+	singleEngine := correlate.NewCorrelationInputEngine(registry, lsMap)
 	corrRules, _ := correlate.ParseCorrelationRules(registry)
 	temporalEval := correlate.NewTemporalEvaluator(corrRules)
 
@@ -200,7 +200,7 @@ func TestTemporalDifferentSourceIPs(t *testing.T) {
 	lsMap, _ := correlate.LoadLogsourceMap(filepath.Join("..", "..", "parsers", "logsource_map.yaml"))
 
 	registry := correlate.NewRuleRegistry(rules)
-	singleEngine := correlate.NewRuleEngine(registry, lsMap)
+	singleEngine := correlate.NewCorrelationInputEngine(registry, lsMap)
 	corrRules, _ := correlate.ParseCorrelationRules(registry)
 	temporalEval := correlate.NewTemporalEvaluator(corrRules)
 
@@ -262,7 +262,7 @@ func TestTemporalOutOfOrderIgnored(t *testing.T) {
 	lsMap, _ := correlate.LoadLogsourceMap(filepath.Join("..", "..", "parsers", "logsource_map.yaml"))
 
 	registry := correlate.NewRuleRegistry(rules)
-	singleEngine := correlate.NewRuleEngine(registry, lsMap)
+	singleEngine := correlate.NewCorrelationInputEngine(registry, lsMap)
 	corrRules, _ := correlate.ParseCorrelationRules(registry)
 	temporalEval := correlate.NewTemporalEvaluator(corrRules)
 

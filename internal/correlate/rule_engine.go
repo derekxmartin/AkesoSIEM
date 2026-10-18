@@ -16,7 +16,7 @@ type Alert struct {
 	Tags        []string
 	Description string
 	Author      string
-	Ruleset     string // "sigma_single" or "sigma_correlation"
+	Ruleset     string // "sigma_single", "sigma_component", or "sigma_correlation"
 	Event       *common.ECSEvent
 }
 
@@ -65,11 +65,27 @@ type RuleEngine struct {
 // Rules that fail to compile or have unmapped logsources are skipped with
 // warnings logged. Correlation rules are excluded (handled separately in P5).
 func NewRuleEngine(registry *RuleRegistry, lsMap *LogsourceMap) *RuleEngine {
+	return newRuleEngine(registry.SingleEventRules(), lsMap)
+}
+
+// NewCorrelationInputEngine evaluates both standalone and component detections.
+// Its results are inputs for correlation evaluators, not a standalone alert feed:
+// callers must not publish sigma_component matches as user-facing alerts.
+func NewCorrelationInputEngine(registry *RuleRegistry, lsMap *LogsourceMap) *RuleEngine {
+	var rules []*SigmaRule
+	for _, rule := range registry.All() {
+		if !isCorrelationType(rule.Type) {
+			rules = append(rules, rule)
+		}
+	}
+	return newRuleEngine(rules, lsMap)
+}
+
+func newRuleEngine(singleRules []*SigmaRule, lsMap *LogsourceMap) *RuleEngine {
 	engine := &RuleEngine{
 		groups: make(map[logsourceKey]*ruleGroup),
 	}
 
-	singleRules := registry.SingleEventRules()
 	engine.stats.TotalRulesLoaded = len(singleRules)
 
 	for _, rule := range singleRules {
@@ -173,6 +189,10 @@ func groupMatchesEvent(grp *ruleGroup, event *common.ECSEvent) bool {
 func evaluateGroup(grp *ruleGroup, event *common.ECSEvent, alerts []Alert) []Alert {
 	for _, cr := range grp.rules {
 		if EvaluateEvent(cr.compiled, event) {
+			ruleset := "sigma_single"
+			if cr.rule.Type == "component" {
+				ruleset = "sigma_component"
+			}
 			alerts = append(alerts, Alert{
 				RuleID:      cr.rule.ID,
 				Title:       cr.rule.Title,
@@ -180,7 +200,7 @@ func evaluateGroup(grp *ruleGroup, event *common.ECSEvent, alerts []Alert) []Ale
 				Tags:        cr.rule.Tags,
 				Description: cr.rule.Description,
 				Author:      cr.rule.Author,
-				Ruleset:     "sigma_single",
+				Ruleset:     ruleset,
 				Event:       event,
 			})
 		}

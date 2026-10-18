@@ -1146,7 +1146,8 @@ level: high
 
 // TestLoadAllProjectRules verifies that all rules from both sigma_curated and
 // akeso_portfolio directories parse and compile successfully.
-// Acceptance criteria: 50 sigma_curated + 10 akeso_portfolio files = 60 total.
+// Preserve the original minimum coverage while allowing new curated rules.
+// Every discovered rule must still parse and compile successfully.
 func TestLoadAllProjectRules(t *testing.T) {
 	projectRoot := filepath.Join("..", "..", "rules")
 
@@ -1155,8 +1156,8 @@ func TestLoadAllProjectRules(t *testing.T) {
 	for _, e := range sigmaErrs {
 		t.Errorf("sigma_curated parse error: %v", e)
 	}
-	if len(sigmaRules) != 50 {
-		t.Fatalf("expected 50 sigma_curated rules, got %d", len(sigmaRules))
+	if len(sigmaRules) < 50 {
+		t.Fatalf("expected at least 50 sigma_curated rules, got %d", len(sigmaRules))
 	}
 
 	// Load akeso_portfolio rules.
